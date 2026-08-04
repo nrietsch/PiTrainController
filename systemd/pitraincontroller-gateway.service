@@ -1,0 +1,14 @@
+[Unit]
+Description=PiTrainController CS2/CS3 LAN gateway (can0 <-> UDP 15731)
+Requires=pitraincontroller-can0.service
+After=pitraincontroller-can0.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m pitraincontroller.gateway.service
+Restart=on-failure
+RestartSec=2
+User=root
+
+[Install]
+WantedBy=multi-user.target

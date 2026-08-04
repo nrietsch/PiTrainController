@@ -1,0 +1,112 @@
+/*
+ * pitraincontroller-mcp25625.dts
+ *
+ * Device tree overlay for the PiTrainController HAT's on-board MCP25625
+ * CAN controller, bound to the mainline `mcp251x` SocketCAN driver.
+ *
+ * Pin map (cross-checked against both the original project brief and the
+ * PCB Design v4.0 board manual/schematic -- identical in both, BCM GPIO
+ * numbering):
+ *   SPI0 MOSI  -> GPIO10 (header pin 19)  standard SPI0, no overlay change needed
+ *   SPI0 MISO  -> GPIO9  (header pin 21)  standard SPI0, no overlay change needed
+ *   SPI0 SCLK  -> GPIO11 (header pin 23)  standard SPI0, no overlay change needed
+ *   SPI0 CE0   -> GPIO8  (header pin 24)  chip select, standard SPI0
+ *   MCP25625 IRQ   -> GPIO25 (header pin 22), active-low interrupt
+ *   MCP25625 RESET -> GPIO27 (header pin 13), active-low hardware reset
+ *
+ * Two things the mainline mcp251x driver does NOT do, that this overlay
+ * has to handle instead:
+ *
+ *   1. Reset: mcp251x.c only ever issues a soft reset over SPI
+ *      (INSTRUCTION_RESET); it has no reset-gpios support. If this board's
+ *      RESET line is left floating/low at boot, the chip stays held in
+ *      reset and the driver's SPI probe will fail. We use a `gpio-hog` on
+ *      GPIO27 to drive it high (inactive) as early as gpiolib comes up,
+ *      independent of driver probe order.
+ *
+ *   2. Clock: the driver needs a `clocks` reference resolving to a fixed
+ *      oscillator frequency. Confirmed as 16 MHz against the board
+ *      schematic (Y1 = LFXTAL058383Bulk, "16MHz 20pF -40C 85C"),
+ *      overridable at dtoverlay-load time if a different board revision
+ *      ever uses a different crystal.
+ *
+ * SPI bus speed is set conservatively to 10 MHz (half the 16 MHz
+ * oscillator is the MCP2515-family's documented safe operating point);
+ * also overridable.
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835", "brcm,bcm2836", "brcm,bcm2837", "brcm,bcm2711";
+
+	/* Enable SPI0 and free up CE0 from the generic spidev binding */
+	fragment@0 {
+		target = <&spi0>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&spidev0>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	/* IRQ pin function select + RESET gpio-hog */
+	fragment@2 {
+		target = <&gpio>;
+		__overlay__ {
+			mcp25625_irq_pin: mcp25625_irq_pin {
+				brcm,pins = <25>;
+				brcm,function = <0>; /* input */
+				brcm,pull = <0>;     /* no pull; board already conditions this line */
+			};
+
+			mcp25625_reset_hog: mcp25625_reset_hog {
+				gpio-hog;
+				gpios = <27 0>;
+				output-high;         /* active-low reset: high = inactive/released */
+				line-name = "mcp25625-reset";
+			};
+		};
+	};
+
+	/* Fixed-clock oscillator node + the mcp25625 SPI device itself */
+	fragment@3 {
+		target = <&spi0>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			mcp25625_osc: mcp25625_osc {
+				compatible = "fixed-clock";
+				#clock-cells = <0>;
+				clock-frequency = <16000000>;
+			};
+
+			can0: mcp25625@0 {
+				reg = <0>;
+				compatible = "microchip,mcp25625";
+				pinctrl-names = "default";
+				pinctrl-0 = <&mcp25625_irq_pin>;
+				spi-max-frequency = <10000000>;
+				interrupt-parent = <&gpio>;
+				/* IRQ_TYPE_LEVEL_LOW = 8 (hardcoded: avoids needing the
+				 * kernel's dt-bindings/interrupt-controller/irq.h include
+				 * path when compiling this overlay standalone with dtc) */
+				interrupts = <25 8>;
+				clocks = <&mcp25625_osc>;
+				status = "okay";
+			};
+		};
+	};
+
+	__overrides__ {
+		oscillator      = <&mcp25625_osc>,"clock-frequency:0";
+		spimaxfrequency = <&can0>,"spi-max-frequency:0";
+	};
+};

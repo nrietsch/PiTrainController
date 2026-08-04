@@ -1,0 +1,16 @@
+# Append these lines to /boot/firmware/config.txt (Raspberry Pi OS
+# Bookworm/Trixie boot partition path) to bring up the PiTrainController
+# HAT's MCP25625 CAN controller. See docs/INSTALL.md for the full procedure.
+
+# Enable SPI0 (required by the mcp251x driver)
+dtparam=spi=on
+
+# Load the PiTrainController overlay: binds the mainline mcp251x driver to
+# the on-board MCP25625 at SPI0 CE0, IRQ on GPIO25, RESET held inactive via
+# GPIO27 gpio-hog, 16 MHz oscillator, 10 MHz SPI bus speed.
+#
+# Optional overrides (append after a comma if you ever need them, e.g.
+# a different board revision with a different crystal):
+#   dtoverlay=pitraincontroller-mcp25625,oscillator=8000000
+#   dtoverlay=pitraincontroller-mcp25625,spimaxfrequency=8000000
+dtoverlay=pitraincontroller-mcp25625

@@ -1,0 +1,17 @@
+[Unit]
+Description=PiTrainController status LED service
+Requires=pitraincontroller-can0.service
+After=pitraincontroller-can0.service pitraincontroller-s88.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m pitraincontroller.leds.service
+Restart=on-failure
+RestartSec=2
+User=root
+# Owns creating/binding the S88 activity socket.
+RuntimeDirectory=pitraincontroller
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

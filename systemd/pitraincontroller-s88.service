@@ -1,0 +1,18 @@
+[Unit]
+Description=PiTrainController S88 bit-bang driver
+Requires=pitraincontroller-can0.service
+After=pitraincontroller-can0.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m pitraincontroller.s88.service
+Restart=on-failure
+RestartSec=2
+# lgpio needs access to /dev/gpiochip0; python-can needs CAP_NET_RAW-ish
+# access to the can0 socket. Running as root is the simplest correct
+# option for a single-purpose HAT-driver box; tighten with a dedicated
+# group + udev rules for /dev/gpiochip0 if you'd rather not.
+User=root
+
+[Install]
+WantedBy=multi-user.target

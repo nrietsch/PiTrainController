@@ -1,0 +1,20 @@
+[Unit]
+Description=Bring up can0 (PiTrainController MCP25625) at Marklin's 250 kbit/s bus speed
+# The mcp251x driver creates the can0 netdev once the pitraincontroller-mcp25625
+# overlay has probed it; wait for that before trying to configure it.
+Requires=sys-subsystem-net-devices-can0.device
+After=sys-subsystem-net-devices-can0.device
+Before=network.target
+
+# Raspberry Pi OS manages most interfaces with NetworkManager, but NM's
+# CAN support is inconsistent across versions/configs -- bringing can0 up
+# with `ip link` directly here is the most portable option and keeps CAN
+# bitrate configuration in one obvious place.
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/ip link set can0 up type can bitrate 250000 restart-ms 100
+ExecStop=/sbin/ip link set can0 down
+
+[Install]
+WantedBy=multi-user.target
