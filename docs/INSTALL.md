@@ -71,11 +71,17 @@ This sets up, in order:
    installed editable so repo changes take effect without reinstalling.
 4. The S88 driver and LED services (always installed — these are the
    board's core function).
-5. **Asks** whether to install the CS2/CS3 LAN gateway (lets Rocrail,
-   the Marklin CS2 App, or other network clients control the layout
-   through this Pi — see [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md)).
-6. **Asks** whether to install Rocrail locally on this Pi (see
-   [`docs/ROCRAIL.md`](ROCRAIL.md) for pointing it at `can0` afterward).
+5. Shows an LED reference screen, then **a checklist menu** (via
+   `whiptail`, same tool `raspi-config` uses — falls back to plain
+   yes/no prompts if it's unavailable) to choose which optional pieces
+   to install:
+   - The **CS2/CS3 LAN gateway** (lets Rocrail, the Marklin CS2 App, or
+     other network clients control the layout through this Pi — see
+     [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md)).
+   - **Rocrail**, downloaded and extracted automatically (it's not an
+     apt package — see [`docs/ROCRAIL.md`](ROCRAIL.md)), though a final
+     manual step is needed from a real desktop session to finish setup;
+     the installer tells you the exact command to run at the end.
 
 Reboot for the overlay to take effect:
 
