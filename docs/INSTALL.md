@@ -48,6 +48,7 @@ sudo apt install -y device-tree-compiler can-utils git python3-pip
 ```bash
 git clone  https://github.com/nrietsch/PiTrainController.git ~/pitraincontroller
 cd ~/pitraincontroller
+chmod +x scripts/*
 ```
 
 (Or copy the working tree over some other way — e.g. `scp` — if you're
