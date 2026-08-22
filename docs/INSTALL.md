@@ -126,16 +126,18 @@ from `pitraincontroller-s88` as sensors change state.
 
 ### Confirm the LEDs
 
+
+- **LED1 (blue, CAN)**: blinks on any `can0` traffic.
+- **LED2 (green, )**: .
+- **LED3 (orange, S88)**: blinks on every S88 poll cycle (roughly every
+  50ms by default — should look close to steady-flickering when
+  `pitraincontroller-s88` is healthy).
 - **LED4 (red, heartbeat)**: steady on for the first minute after
   `pitraincontroller-leds` starts, then switches to a slow periodic
   blip. If it switches to a fast blink instead, that's the fault
   pattern — check `journalctl -u pitraincontroller-leds` for why
   (`can0` down, or no S88 activity seen recently).
-- **LED1 (blue, CAN)**: blinks on any `can0` traffic.
-- **LED3 (orange, S88)**: blinks on every S88 poll cycle (roughly every
-  50ms by default — should look close to steady-flickering when
-  `pitraincontroller-s88` is healthy).
-
+  
 ### If you installed Rocrail or the gateway
 
 See [`docs/ROCRAIL.md`](ROCRAIL.md) and [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md)
