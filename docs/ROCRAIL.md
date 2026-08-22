@@ -14,15 +14,34 @@ same interface.
 
 ## Install
 
+Rocrail is **not** an apt package on Raspberry Pi OS/Debian — `apt install rocrail`
+fails with `Unable to locate package` (confirmed: it's simply not in the
+repos). Rocrail instead ships as a self-contained snapshot archive with
+its own setup script:
+
 ```bash
-sudo apt update
-sudo apt install -y rocrail
+cd ~
+wget https://wiki.rocrail.net/rocrail-snapshot/Rocrail-debian13-ARM64.zip
+unzip Rocrail-debian13-ARM64.zip -d Rocrail-debian13-ARM64
+cd Rocrail-debian13-ARM64
+sudo apt install -y libevdev2 libinput10   # dependencies desktoplink.sh expects
+sh ./desktoplink.sh
 ```
 
-(Raspberry Pi OS Trixie Desktop is assumed per the project's OS choice —
-Rocrail's GUI needs a display. If you ever run this headless instead,
-Rocrail also supports a client/server split — `rocrail` the server plus
-`roweb`/a remote `Rocview` client — but that's out of scope here.)
+`desktoplink.sh` sets up the launcher/desktop icon for the currently
+logged-in desktop session — run it from a real terminal in that session
+(not over a headless SSH connection with no display, and not via `sudo`),
+same as Rocrail's own install docs describe.
+
+The `debian13` build matches Raspberry Pi OS Trixie (Debian 13) — that's
+why this project picked it over the `PiOS11`-labeled build in the same
+snapshot directory, which appears to target an older/different
+Raspberry Pi OS revision. These are rolling snapshot builds (the
+filename doesn't version-pin), so if that exact URL 404s by the time
+you read this, browse
+[wiki.rocrail.net's download page](https://wiki.rocrail.net/doku.php?id=download-en)
+for the current equivalent and swap the URL above — the rest of this
+page (configuration, verification) doesn't depend on the exact build.
 
 ## Configure Rocrail to use `can0` directly
 
