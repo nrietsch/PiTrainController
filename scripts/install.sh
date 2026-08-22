@@ -149,19 +149,26 @@ fi
 # home directory) but leave running desktoplink.sh itself as a manual
 # last step rather than guessing at a session that may not exist here.
 if [ "$ROCRAIL_ANSWER" = "y" ]; then
-	echo "Rocrail isn't an apt package -- downloading the Debian 13 (Trixie) snapshot build for $TARGET_USER..."
-	apt-get install -y libevdev2 libinput10
-	ROCRAIL_ZIP="$TARGET_HOME/Rocrail-debian13-ARM64.zip"
-	ROCRAIL_DIR="$TARGET_HOME/Rocrail-debian13-ARM64"
-	if sudo -u "$TARGET_USER" wget -q -O "$ROCRAIL_ZIP" \
-		https://wiki.rocrail.net/rocrail-snapshot/Rocrail-debian13-ARM64.zip; then
+	echo "Rocrail isn't an apt package -- downloading the Raspberry Pi ARM64 snapshot build for $TARGET_USER..."
+	apt-get install -y libevdev2 libinput10 wget unzip
+	ROCRAIL_ZIP="$TARGET_HOME/Rocrail-PiOS11-ARM64.zip"
+	ROCRAIL_DIR="$TARGET_HOME/Rocrail-PiOS11-ARM64"
+	# Deliberately not using wget's -q here: if this download ever fails
+	# again (rolling snapshot filenames can change), wget's own error
+	# (404, DNS failure, etc.) is far more useful for diagnosing why than
+	# a generic message -- that's what bit us the first time this URL was
+	# wrong, so let it talk.
+	if sudo -u "$TARGET_USER" wget -O "$ROCRAIL_ZIP" \
+		https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip; then
 		sudo -u "$TARGET_USER" mkdir -p "$ROCRAIL_DIR"
 		sudo -u "$TARGET_USER" unzip -q -o "$ROCRAIL_ZIP" -d "$ROCRAIL_DIR"
 		ROCRAIL_INSTALLED=y
 		ROCRAIL_NEEDS_DESKTOPLINK=y
 	else
-		echo "Download failed (rolling snapshot URL may have changed) -- see docs/ROCRAIL.md" \
-			"for the current download link and finish this manually."
+		echo ""
+		echo "Download failed (see the wget error above for why) -- browse"
+		echo "https://wiki.rocrail.net/rocrail-snapshot/ for the current filename,"
+		echo "then see docs/ROCRAIL.md to finish this manually."
 		ROCRAIL_INSTALLED=n
 	fi
 else

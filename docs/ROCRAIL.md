@@ -21,9 +21,9 @@ its own setup script:
 
 ```bash
 cd ~
-wget https://wiki.rocrail.net/rocrail-snapshot/Rocrail-debian13-ARM64.zip
-unzip Rocrail-debian13-ARM64.zip -d Rocrail-debian13-ARM64
-cd Rocrail-debian13-ARM64
+wget https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip
+unzip Rocrail-PiOS11-ARM64.zip -d Rocrail-PiOS11-ARM64
+cd Rocrail-PiOS11-ARM64
 sudo apt install -y libevdev2 libinput10   # dependencies desktoplink.sh expects
 sh ./desktoplink.sh
 ```
@@ -33,15 +33,26 @@ logged-in desktop session — run it from a real terminal in that session
 (not over a headless SSH connection with no display, and not via `sudo`),
 same as Rocrail's own install docs describe.
 
-The `debian13` build matches Raspberry Pi OS Trixie (Debian 13) — that's
-why this project picked it over the `PiOS11`-labeled build in the same
-snapshot directory, which appears to target an older/different
-Raspberry Pi OS revision. These are rolling snapshot builds (the
-filename doesn't version-pin), so if that exact URL 404s by the time
-you read this, browse
-[wiki.rocrail.net's download page](https://wiki.rocrail.net/doku.php?id=download-en)
-for the current equivalent and swap the URL above — the rest of this
-page (configuration, verification) doesn't depend on the exact build.
+`Rocrail-PiOS11-ARM64.zip` is the build rocrail.net's own download page
+lists under "RaspberryPi / WIO", manufacturer "RaspberryPi, Odroid" —
+that's the right one for this board, confirmed directly against their
+live directory listing (verified with `curl -I` on the URL above, HTTP
+200). An earlier version of this doc pointed at
+`Rocrail-debian13-ARM64.zip`, which looked like a better match for
+"Raspberry Pi OS Trixie = Debian 13" but was wrong — that build is
+actually for Apple Silicon/Snapdragon machines running Debian 13, a
+different category in their listing entirely, and doesn't exist at that
+path. The `PiOS11` label is just Rocrail's own build tag (their minimum
+supported Raspberry Pi OS baseline), not a sign it's outdated for
+Trixie.
+
+These are rolling snapshot builds (the filename doesn't version-pin the
+contents, and can be renamed if Rocrail restructures their categories),
+so if that exact URL 404s by the time you read this, browse
+[wiki.rocrail.net/rocrail-snapshot/](https://wiki.rocrail.net/rocrail-snapshot/)
+directly (a plain file listing) for the current filename under
+"RaspberryPi / WIO" and swap the URL above — the rest of this page
+(configuration, verification) doesn't depend on the exact build.
 
 ## Configure Rocrail to use `can0` directly
 
