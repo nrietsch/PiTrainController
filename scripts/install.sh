@@ -51,10 +51,16 @@ systemctl enable pitraincontroller-can0.service
 echo ""
 echo "-- Python package + dependencies --"
 apt-get install -y python3-pip python3-can python3-lgpio 2>/dev/null || true
-# Fall back to pip for anything apt doesn't have packaged (varies by
-# Raspberry Pi OS release); --break-system-packages is appropriate here
-# since these services run under the system python3, not a venv.
-pip install --break-system-packages -e "$REPO_DIR/python"
+# apt just installed python3-can/python3-lgpio as Debian-managed packages
+# (no pip RECORD manifest). --no-deps stops pip from trying to also
+# resolve/reinstall those as pip dependencies -- without it, pip sees a
+# version mismatch against the apt package, tries to uninstall it to
+# replace it, and fails with "uninstall-no-record-file" since apt-managed
+# packages aren't pip's to remove. This only installs our own package
+# (pitraincontroller) editable, trusting apt for its two dependencies.
+# --break-system-packages is appropriate here since these services run
+# under the system python3, not a venv.
+pip install --break-system-packages --no-deps -e "$REPO_DIR/python"
 
 # --- 3. Mandatory: S88 driver + LED service ---
 echo ""

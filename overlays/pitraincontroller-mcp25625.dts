@@ -75,18 +75,29 @@
 		};
 	};
 
-	/* Fixed-clock oscillator node + the mcp25625 SPI device itself */
+	/* Fixed-clock oscillator node. Deliberately its own fragment targeting
+	 * root rather than living inside spi0's __overlay__ -- dtc's SPI-bus
+	 * lint (spi_bus_reg) treats every child of an SPI bus node as a would-be
+	 * SPI device and warns if it lacks a chip-select `reg`, which doesn't
+	 * apply to a plain clock provider. Keeping it out of spi0's scope
+	 * avoids that false-positive warning entirely. */
 	fragment@3 {
-		target = <&spi0>;
+		target-path = "/";
 		__overlay__ {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
 			mcp25625_osc: mcp25625_osc {
 				compatible = "fixed-clock";
 				#clock-cells = <0>;
 				clock-frequency = <16000000>;
 			};
+		};
+	};
+
+	/* The mcp25625 SPI device itself */
+	fragment@4 {
+		target = <&spi0>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
 
 			can0: mcp25625@0 {
 				reg = <0>;
