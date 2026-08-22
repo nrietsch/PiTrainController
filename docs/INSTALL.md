@@ -134,7 +134,7 @@ from `pitraincontroller-s88` as sensors change state.
 
 
 - **LED1 (blue, CAN)**: blinks on any `can0` traffic.
-- **LED2 (green, )**: .
+- **LED2 (green, PWR)**: Power present (passive, no GPIO).
 - **LED3 (orange, S88)**: blinks on every S88 poll cycle (roughly every
   50ms by default — should look close to steady-flickering when
   `pitraincontroller-s88` is healthy).
