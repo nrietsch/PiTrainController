@@ -46,7 +46,7 @@ sudo apt install -y device-tree-compiler can-utils git python3-pip
 ## 3. Get this repository onto the Pi
 
 ```bash
-git clone <this-repo-url> ~/pitraincontroller
+git clone  https://github.com/nrietsch/PiTrainController.git ~/pitraincontroller
 cd ~/pitraincontroller
 ```
 
