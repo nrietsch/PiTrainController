@@ -54,6 +54,39 @@ directly (a plain file listing) for the current filename under
 "RaspberryPi / WIO" and swap the URL above — the rest of this page
 (configuration, verification) doesn't depend on the exact build.
 
+## Desktop launcher: skip the "Execute File" prompt, and autostart on boot
+
+`desktoplink.sh` drops a `Rocview.desktop` launcher on the Desktop.
+Double-clicking it triggers PCManFM's (Raspberry Pi OS's file manager)
+"Execute File" confirmation dialog every time, because the launcher
+isn't marked as trusted yet. Fix once, per launcher:
+
+```bash
+chmod +x ~/Desktop/Rocview.desktop
+gio set ~/Desktop/Rocview.desktop metadata::trusted true
+```
+
+After that, double-clicking opens Rocrail directly, no dialog. (If you'd
+rather kill the prompt for every executable/script on the desktop, not
+just this one, the underlying setting is `quick_exec` in
+`~/.config/libfm/libfm.conf`'s `[config]` section — `0` asks every time
+(the default), `1` never asks. The per-file `gio set ... trusted`
+approach above is more targeted and doesn't relax that check for
+anything else you might double-click later.)
+
+To start Rocrail automatically when the desktop session starts (XDG
+autostart, honored by both LXDE and Raspberry Pi OS's Wayfire session):
+
+```bash
+mkdir -p ~/.config/autostart
+cp ~/Desktop/Rocview.desktop ~/.config/autostart/
+```
+
+This only starts Rocrail once you're logged into a desktop session — if
+you also want the Pi to boot straight to that desktop (not just to a
+login prompt), that's `raspi-config` → *System Options* → *Boot / Auto
+Login* → *Desktop Autologin*, separate from anything in this repo.
+
 ## Configure Rocrail to use `can0` directly
 
 Rocrail has a native SocketCAN controller (its own docs and community
