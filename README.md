@@ -74,6 +74,19 @@ need real hardware to confirm.
 See [`docs/INSTALL.md`](docs/INSTALL.md) for the full install guide, or
 just run `sudo scripts/install.sh` on the Pi once boards exist.
 
+## Running the tests
+
+The pure-logic unit tests (`python/tests/`) run on any machine with
+Python 3.11+ — no Pi, `lgpio`, or real CAN interface needed. Install
+just `pytest` and `python-can` (skip the full editable install, since
+`lgpio` is Pi/liblgpio-only and isn't needed to run these):
+
+```bash
+cd python
+pip install pytest python-can
+pytest
+```
+
 ## Repository layout
 
 ```
