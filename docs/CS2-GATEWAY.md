@@ -71,17 +71,34 @@ operating it from an MS2 — see
 [`ifoedit.com/RaspiCS2En.html#RocrailConfig`](http://www.ifoedit.com/RaspiCS2En.html#RocrailConfig)
 for the original walkthrough.
 
-That decode step hasn't been ported to this rewrite yet. Today, `candump
-can0` will show raw frames on the shared bus, but not decoded into
-human-readable Loc-ID/function text — only S88 event frames are
-encoded/decoded in
-[`common/marklin_can.py`](../python/pitraincontroller/common/marklin_can.py);
-"Lok Funktion" (command 0x06) and "Lok Discovery" (command 0x01) framing
-were never carried over. Porting that decode table (byte layout is in
-[`CAN2LAN.cpp:660-667`](reference/legacy-picans88-2016/PiCanS88/CAN2LAN.cpp#L660-L667)
-for Lok Funktion) into a small monitor CLI is a reasonable next step if
-this workflow is needed before real hardware exists to test the gateway
-against.
+That decode step is now ported: run
+
+```bash
+python3 -m pitraincontroller.gateway.monitor -i can0
+```
+
+on the Pi and it prints the same style of two-line decode for every
+frame seen on `can0` (shared SocketCAN interface, so this runs fine
+alongside the gateway service and/or Rocrail). To read off a new MFX
+loco's address: connect an MS2, put a "new" MFX loco on the track, press
+STOP then again to search/register it, then work a function key (e.g.
+headlights) on the MS2 for that loco while the monitor is running —
+watch for a `Command: Lok Funktion` line, whose `Loc-ID` field is the
+new address, hex, per the walkthrough linked above (e.g. `Loc-ID:
+[00004007]` = address `0x4007` → MFX range starts at `0x4000`, so
+address **7**; enter that decimal value in Rocrail).
+
+Implementation: pure decode logic in
+[`common/marklin_decode.py`](../python/pitraincontroller/common/marklin_decode.py)
+(no I/O, so it's directly testable), CLI wrapper in
+[`gateway/monitor.py`](../python/pitraincontroller/gateway/monitor.py).
+Ported from the byte layout in
+[`CAN2LAN.cpp:528-754`](reference/legacy-picans88-2016/PiCanS88/CAN2LAN.cpp#L528-L754)
+(covers System command, Lok Discovery/Bind/Verify, Lok
+Geschwindigkeit/Richtung/Funktion, CV read/write, accessory switching,
+S88 polling/event, ping, status config, and automatic-route commands).
+Not a systemd service — it's a manual diagnostic tool, run it
+interactively when you need it.
 
 ## Known gaps
 

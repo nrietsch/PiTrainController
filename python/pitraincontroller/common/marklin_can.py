@@ -42,6 +42,15 @@ def build_can_id(priority: int, command: int, response: bool, hash_value: int) -
     return (priority << 25) | (command << 17) | ((1 if response else 0) << 16) | hash_value
 
 
+def parse_can_id(can_id: int) -> tuple[int, int, bool, int]:
+    """Inverse of build_can_id: returns (priority, command, response, hash_value)."""
+    priority = (can_id >> 25) & 0xF
+    command = (can_id >> 17) & 0xFF
+    response = bool((can_id >> 16) & 0x1)
+    hash_value = can_id & 0xFFFF
+    return priority, command, response, hash_value
+
+
 def derive_hash_placeholder(device_uid: int) -> int:
     """Placeholder only -- see module docstring. Returns device_uid as-is,
     truncated to 16 bits."""
