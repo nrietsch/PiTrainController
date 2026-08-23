@@ -57,22 +57,41 @@ directly (a plain file listing) for the current filename under
 ## Desktop launcher: skip the "Execute File" prompt, and autostart on boot
 
 `desktoplink.sh` drops a `Rocview.desktop` launcher on the Desktop.
-Double-clicking it triggers PCManFM's (Raspberry Pi OS's file manager)
-"Execute File" confirmation dialog every time, because the launcher
-isn't marked as trusted yet. Fix once, per launcher:
+Double-clicking it can trigger PCManFM's (Raspberry Pi OS's file
+manager) "Execute File" confirmation dialog. Two things matter here,
+and it's easy to make it worse rather than better:
 
-```bash
-chmod +x ~/Desktop/Rocview.desktop
-gio set ~/Desktop/Rocview.desktop metadata::trusted true
-```
+- **Don't `chmod +x` the `.desktop` file.** It doesn't need it — PCManFM
+  reads its `[Desktop Entry]`/`Exec=` fields to launch the target
+  program either way — and making it executable can push PCManFM into
+  treating it as an ambiguous raw script rather than a recognized
+  application launcher, which is what produces the Execute/Execute in
+  Terminal/Open dialog in the first place (and why choosing "Open" opens
+  it as text instead of running Rocrail). If you already ran `chmod +x`
+  on it, undo that:
 
-After that, double-clicking opens Rocrail directly, no dialog. (If you'd
-rather kill the prompt for every executable/script on the desktop, not
-just this one, the underlying setting is `quick_exec` in
-`~/.config/libfm/libfm.conf`'s `[config]` section — `0` asks every time
-(the default), `1` never asks. The per-file `gio set ... trusted`
-approach above is more targeted and doesn't relax that check for
-anything else you might double-click later.)
+  ```bash
+  chmod -x ~/Desktop/Rocview.desktop
+  ```
+
+- **The dialog itself is controlled by a PCManFM preference**, not a
+  per-file trust flag (that's a GNOME/Nautilus convention that doesn't
+  apply here): File Manager → **Edit → Preferences → General** → check
+  **"Don't ask options on launch executable file"**. Equivalent from a
+  terminal (`quick_exec=1` under `[config]` in
+  `~/.config/pcmanfm/LXDE-pi/pcmanfm.conf`; needs a desktop-session
+  restart — logout/login or reboot — to take effect):
+
+  ```bash
+  mkdir -p ~/.config/pcmanfm/LXDE-pi
+  grep -q '^\[config\]' ~/.config/pcmanfm/LXDE-pi/pcmanfm.conf 2>/dev/null && \
+    sed -i 's/^quick_exec=.*/quick_exec=1/' ~/.config/pcmanfm/LXDE-pi/pcmanfm.conf || \
+    printf '[config]\nquick_exec=1\n' >> ~/.config/pcmanfm/LXDE-pi/pcmanfm.conf
+  ```
+
+  This is a global "don't ask" toggle (applies to any executable/script
+  you double-click, not just this launcher) since PCManFM doesn't expose
+  a narrower per-file version of it.
 
 To start Rocrail automatically when the desktop session starts (XDG
 autostart, honored by both LXDE and Raspberry Pi OS's Wayfire session):
