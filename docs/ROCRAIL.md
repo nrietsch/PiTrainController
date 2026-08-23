@@ -25,7 +25,7 @@ wget https://wiki.rocrail.net/rocrail-snapshot/Rocrail-PiOS11-ARM64.zip
 unzip Rocrail-PiOS11-ARM64.zip -d Rocrail-PiOS11-ARM64
 cd Rocrail-PiOS11-ARM64
 sudo apt install -y libevdev2 libinput10   # dependencies desktoplink.sh expects
-sh ./desktoplink.sh
+bash ./desktoplink.sh
 ```
 
 `desktoplink.sh` sets up the launcher/desktop icon for the currently

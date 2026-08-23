@@ -190,6 +190,6 @@ if [ "$ROCRAIL_INSTALLED" = "y" ]; then
 	echo "Rocrail was downloaded to $ROCRAIL_DIR but NOT fully set up yet --"
 	echo "desktoplink.sh needs to run from a real desktop terminal (not this"
 	echo "sudo/SSH session) to register the launcher correctly:"
-	echo "  cd $ROCRAIL_DIR && sh ./desktoplink.sh"
+	echo "  cd $ROCRAIL_DIR && bash ./desktoplink.sh"
 	echo "Then see docs/ROCRAIL.md to point it at can0."
 fi
