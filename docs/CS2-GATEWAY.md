@@ -37,6 +37,52 @@ real devices emitting an identical `(id, data)` pair within the dedup
 window would also get one of them dropped. Fine for a bridge; would need
 revisiting for anything relying on strict delivery guarantees.
 
+## Track power (Start/Stop) without an MS2/CS2
+
+You don't need a real Märklin controller on the bus to start/stop track
+power — anything that can put a frame on `can0` will do, since it's a
+shared SocketCAN interface.
+
+**From Rocrail's GUI** — the power on/off button in Rocrail's toolbar
+sends the same System-Stop/System-Go frame an MS2 would, using Rocrail's
+own built-in CS2/MBUS CAN controller talking to `can0` directly. No
+gateway or extra setup needed.
+
+**From the CLI**, via `cansend` (part of `can-utils`, already installed
+by `scripts/install.sh`):
+
+```bash
+cansend can0 00000000#0000000000   # System Stop
+cansend can0 00000000#0000000001   # System Go
+```
+
+Frame layout: Command 0x00 (System command), data = 4-byte target UID
+(`00000000` = broadcast/all devices) + 1-byte sub-command (`00` = Stop,
+`01` = Go). Confirmed against the original 2016 project's own decoder —
+see
+[`CAN2LAN.cpp:562-567`](reference/legacy-picans88-2016/PiCanS88/CAN2LAN.cpp#L562-L567).
+
+## Reading raw traffic / MFX locomotive address discovery
+
+The 2016 predecessor project had a `-v` verbose mode that decoded frames
+into readable text (e.g. `Loc-ID: [00004007]`) to let you read off a
+newly-registered MFX locomotive's address by watching the bus while
+operating it from an MS2 — see
+[`ifoedit.com/RaspiCS2En.html#RocrailConfig`](http://www.ifoedit.com/RaspiCS2En.html#RocrailConfig)
+for the original walkthrough.
+
+That decode step hasn't been ported to this rewrite yet. Today, `candump
+can0` will show raw frames on the shared bus, but not decoded into
+human-readable Loc-ID/function text — only S88 event frames are
+encoded/decoded in
+[`common/marklin_can.py`](../python/pitraincontroller/common/marklin_can.py);
+"Lok Funktion" (command 0x06) and "Lok Discovery" (command 0x01) framing
+were never carried over. Porting that decode table (byte layout is in
+[`CAN2LAN.cpp:660-667`](reference/legacy-picans88-2016/PiCanS88/CAN2LAN.cpp#L660-L667)
+for Lok Funktion) into a small monitor CLI is a reasonable next step if
+this workflow is needed before real hardware exists to test the gateway
+against.
+
 ## Known gaps
 
 - **Device-UID assignment handshake** (System command 1, sub-command 7
