@@ -22,6 +22,7 @@ Power and the CAN bus both arrive on a single 4-pin connector from the Gleisbox 
 Gleisbox (raw AC/DC + CAN, via J2) → BR1 bridge rectifier → IC2 (LM73606, 6A buck regulator) → VCC_5V_SYS (main 5V rail).
 From VCC_5V_SYS, two things happen in parallel:
 PS1 (LM1117-3.3 LDO) steps a portion down to 3.3V (VCC_3V3_LOCAL) to run the CAN controller (IC1) and its local logic.
+> **Known v4.0 errata (found in first hardware bring-up):** IC1's transceiver supply pin VDDA (pin 27) must be 5V (datasheet: 4.5–5.5V; only VDD/VIO may be 3.3V), but this revision wires it to VCC_3V3_LOCAL. With VDDA on 3.3V, SPI and loopback work but nothing reaches the CAN bus. Built boards need pin 27 moved to VCC_5V_SYS; fix in the next revision.
 IC3 (LM74610, an “ideal diode” controller) drives Q1 (a MOSFET) as a low-loss electronic diode between VCC_5V_SYS and a separate net called PI_5V, which feeds the Raspberry Pi's 5V pins directly through the GPIO header (pins 2 and 4).
 3.2 No Direct Power for the Pi — Important
 This board does not give the Raspberry Pi its own power jack, USB port, or any independent power input. The Pi is powered exclusively through its 40-pin GPIO header, fed from this board's regulator via the ideal-diode circuit described above.

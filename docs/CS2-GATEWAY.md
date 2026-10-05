@@ -37,6 +37,35 @@ real devices emitting an identical `(id, data)` pair within the dedup
 window would also get one of them dropped. Fine for a bridge; would need
 revisiting for anything relying on strict delivery guarantees.
 
+## Waking the Gleisbox ("magic start") and the ping test
+
+A Gleisbox stays silent until it sees a non-spec "magic start" frame
+(the 2016 PiCanS88 sent it at startup — see
+[`CAN2LAN.cpp:479-504`](reference/legacy-picans88-2016/PiCanS88/CAN2LAN.cpp#L479-L504)).
+The gateway now sends it once when it starts (`PITC_GATEWAY_SEND_MAGIC_START=0`
+disables that). If the Gleisbox is powered on *after* the gateway
+started, restart the service or send it by hand:
+
+```bash
+cansend can0 00360301#0000000011
+```
+
+This is also the quickest end-to-end check that the CAN link works
+(first confirmed on real hardware with a Gleisbox 60112/60113 — before
+this frame a ping got no answer, afterwards it did). With
+`python3 -m pitraincontroller.gateway.monitor` running in one terminal:
+
+```bash
+cansend can0 00304711#          # ping request
+```
+
+A reply decodes as `Teilnehmer Ping ... Geraetekennung: [0010] (Gleisbox 60112
+und 60113)`. If instead `cansend` fails with `No buffer space available`
+or the monitor prints `SocketCAN ERROR FRAME` lines, the controller is
+going bus-off. Start with: is the transceiver supply (MCP25625 `VDDA`)
+actually 5V? On the v4.0 board it was wired to 3.3V by mistake, which
+passes SPI/loopback tests but never puts anything on the bus.
+
 ## Track power (Start/Stop) without an MS2/CS2
 
 You don't need a real Märklin controller on the bus to start/stop track
@@ -115,8 +144,8 @@ interactively when you need it.
   for a live multi-device bus. Worth implementing properly here once
   real hardware exists to test against, since the gateway is the
   natural place for all Marklin protocol-level logic to live.
-- **Not yet verified against real hardware/traffic.** The framing
-  itself is verified by unit test against the spec-documented byte
-  layout; the actual relay loop, SocketCAN sharing behavior, and UDP
-  broadcast delivery on a real LAN all still need a real Pi + Gleisbox +
+- **Only partly verified against real hardware.** Confirmed on a real
+  Pi + Gleisbox: the CAN link itself (magic start, ping reply). The
+  framing is verified by unit test; the relay loop, SocketCAN sharing
+  with Rocrail, and UDP broadcast delivery on a real LAN still need a
   Rocrail/CS2 App to confirm end-to-end.

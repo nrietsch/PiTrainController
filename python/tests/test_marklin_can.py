@@ -4,9 +4,19 @@ import pytest
 
 from pitraincontroller.common.marklin_can import (
     build_can_id,
+    build_magic_start_frame,
     encode_s88_event,
     parse_can_id,
 )
+
+
+def test_magic_start_frame_matches_2016_original():
+    # CAN2LAN.cpp send_magic_start_60113_frame: id 0x360301, DLC 5, 00 00 00 00 11
+    msg = build_magic_start_frame()
+    assert msg.is_extended_id
+    assert msg.arbitration_id == 0x00360301
+    assert msg.data == bytes([0, 0, 0, 0, 0x11])
+    assert parse_can_id(msg.arbitration_id) == (0, 0x1B, False, 0x0301)
 
 
 def test_build_and_parse_can_id_round_trip():

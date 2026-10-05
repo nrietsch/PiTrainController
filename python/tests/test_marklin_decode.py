@@ -55,6 +55,18 @@ def test_decode_s88_event_round_trips_with_encoder():
     assert "Zustand neu: [01]" in out
 
 
+def test_decode_magic_start():
+    out = decode_frame(0x00360301, bytes([0, 0, 0, 0, 0x11]))
+    assert "Gleisbox Magic Start" in out
+    assert "Gleisbox 60113" in out
+
+
+def test_decode_magic_start_with_unexpected_data_does_not_claim_it_is_the_known_frame():
+    out = decode_frame(0x00360301, bytes([1, 2]))
+    assert "Gleisbox Magic Start" in out
+    assert "start request" not in out
+
+
 def test_decode_unknown_command():
     can_id = build_can_id(priority=0, command=0x7F, response=False, hash_value=0)
     out = decode_frame(can_id, b"")

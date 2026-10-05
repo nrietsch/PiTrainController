@@ -10,7 +10,8 @@ work correctly as a pure bridge. Those only matter if this process needs
 to originate its own protocol-level traffic under its own identity,
 which the gateway itself doesn't -- it only ever forwards frames that
 originated elsewhere (the S88 service, a real Gleisbox, Rocrail, a CS2
-App, etc).
+App, etc). The one exception is the Gleisbox "magic start" frame it sends
+once at startup (see SEND_MAGIC_START below).
 
 can0 is a shared SocketCAN interface -- Rocrail (or anything else) can
 bind to it directly at the same time as this gateway relays to/from UDP;
@@ -32,6 +33,7 @@ from collections import deque
 import can
 
 from pitraincontroller.common.config import CanConfig
+from pitraincontroller.common.marklin_can import build_magic_start_frame
 from pitraincontroller.gateway.protocol import UDP_PACKET_LEN, pack_udp_frame, unpack_udp_frame
 
 logging.basicConfig(
@@ -52,6 +54,13 @@ BROADCAST_ADDR = os.environ.get("PITC_GATEWAY_BROADCAST_ADDR", "255.255.255.255"
 # dropped), not a protocol-level solution -- fine for a bridge, would
 # need revisiting for anything relying on frame delivery guarantees.
 ECHO_DEDUP_WINDOW_S = float(os.environ.get("PITC_GATEWAY_ECHO_DEDUP_WINDOW_S", "0.2"))
+
+# A Gleisbox stays silent until it sees the "magic start" frame, so send it
+# once at startup (as the 2016 PiCanS88 did). Harmless on a bus that has no
+# Gleisbox; set to 0 to disable. If the Gleisbox is powered after this
+# service starts, restart the service (or send the frame by hand, see
+# docs/CS2-GATEWAY.md).
+SEND_MAGIC_START = os.environ.get("PITC_GATEWAY_SEND_MAGIC_START", "1") == "1"
 
 
 def _open_udp_socket(port: int) -> socket.socket:
@@ -92,6 +101,13 @@ def main() -> None:
         "CS2/CS3 gateway starting: %s <-> UDP broadcast %s:%d",
         can_config.interface, BROADCAST_ADDR, UDP_PORT,
     )
+
+    if SEND_MAGIC_START:
+        try:
+            bus.send(build_magic_start_frame())
+            log.info("sent Gleisbox magic start frame")
+        except can.CanError:
+            log.warning("could not send Gleisbox magic start frame", exc_info=True)
 
     try:
         while True:

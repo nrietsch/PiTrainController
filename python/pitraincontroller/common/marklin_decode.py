@@ -282,6 +282,7 @@ _COMMAND_NAMES = {
     0x10: "S88 Polling",
     0x11: "S88 Event",
     0x18: "Teilnehmer Ping",
+    0x1B: "Gleisbox Magic Start",
     0x1D: "Statusdaten Konfiguration",
     0x20: "Anfordern Config Data",
     0x21: "Config Data Stream",
@@ -332,6 +333,8 @@ def decode_frame(can_id: int, data: bytes) -> str:
             detail = _decode_s88_event(data)
         elif command == 0x18:
             detail = _decode_ping(data)
+        elif command == 0x1B:
+            detail = _decode_magic_start(data)
         elif command == 0x1D:
             detail = _decode_status_config(data, response)
         elif command == 0x20:
@@ -346,6 +349,13 @@ def decode_frame(can_id: int, data: bytes) -> str:
         detail = "malformed frame (too short for this command)"
 
     return f"{header}\nCommand: {name}: {detail}"
+
+
+def _decode_magic_start(data: bytes) -> str:
+    """Not in the published spec; see MAGIC_START_DATA in marklin_can.py."""
+    if data == bytes([0x00, 0x00, 0x00, 0x00, 0x11]):
+        return "start request for Gleisbox 60113 (undocumented, from the 2016 PiCanS88)"
+    return f"data: {data.hex(' ').upper()}"
 
 
 def _decode_request_config_data() -> str:

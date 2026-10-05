@@ -57,6 +57,23 @@ def derive_hash_placeholder(device_uid: int) -> int:
     return device_uid & 0xFFFF
 
 
+# "Magic start" frame for the Gleisbox 60113: not in the published CS2 CAN
+# spec, but the 2016 PiCanS88 sent it at startup (CAN2LAN.cpp,
+# send_magic_start_60113_frame). In first-hardware bring-up a Gleisbox
+# ignored pings until it saw this frame, then answered normally.
+MAGIC_START_ARBITRATION_ID = 0x00360301
+MAGIC_START_DATA = bytes([0x00, 0x00, 0x00, 0x00, 0x11])
+
+
+def build_magic_start_frame() -> can.Message:
+    return can.Message(
+        arbitration_id=MAGIC_START_ARBITRATION_ID,
+        is_extended_id=True,
+        data=MAGIC_START_DATA,
+        dlc=len(MAGIC_START_DATA),
+    )
+
+
 # Command 0x11, "Rueckmelde Event" / S88 Event (spec section 5.2, page 40).
 # CAN-ID command nibble is documented directly as 0x22 = 0x11 << 1 | resp(0),
 # consistent with the bit layout above.
