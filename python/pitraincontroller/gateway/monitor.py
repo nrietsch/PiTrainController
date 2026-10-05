@@ -18,6 +18,7 @@ import argparse
 
 import can
 
+from pitraincontroller.common.can_errors import describe_error_frame
 from pitraincontroller.common.marklin_decode import decode_frame
 
 
@@ -33,7 +34,10 @@ def main() -> None:
             msg = bus.recv()
             if msg is None:
                 continue
-            print(decode_frame(msg.arbitration_id, bytes(msg.data)))
+            if msg.is_error_frame:
+                print(describe_error_frame(msg.arbitration_id, bytes(msg.data)))
+            else:
+                print(decode_frame(msg.arbitration_id, bytes(msg.data)))
             print()
     except KeyboardInterrupt:
         pass
