@@ -31,9 +31,18 @@ class FakeGpioBus:
         return self._queued_reads.pop(0)
 
 
-def _bus(module_count: int = 1, bits_per_module: int = 4) -> tuple[S88Bus, FakeGpioBus]:
+def _bus(
+    module_count: int = 1,
+    bits_per_module: int = 4,
+    load_active_high: bool = True,
+) -> tuple[S88Bus, FakeGpioBus]:
     pins = Pins()
-    config = S88Config(module_count=module_count, bits_per_module=bits_per_module)
+    config = S88Config(
+        module_count=module_count,
+        bits_per_module=bits_per_module,
+        load_active_high=load_active_high,
+        reset_active_high=True,
+    )
     gpio = FakeGpioBus()
     return S88Bus(gpio, pins, config), gpio
 
@@ -83,14 +92,41 @@ def test_scan_with_no_changes_reports_nothing():
     assert changes == []
 
 
-def test_scan_pulses_reset_and_load_before_reading():
+def test_idle_levels_are_all_low_for_classic_active_high_bus():
+    bus, gpio = _bus()
+    pins = bus._pins
+    assert gpio.claimed_outputs == {pins.s88_clock: 0, pins.s88_load: 0, pins.s88_reset: 0}
+
+
+def test_scan_follows_classic_s88_sequence():
+    # Same order as the 2016 PiCanS88 (S88UDP.cpp HandleS88Events): LOAD high,
+    # one CLOCK pulse while LOAD is high, RESET pulse, LOAD low, then
+    # read-then-clock for each bit.
     bus, gpio = _bus(bits_per_module=2)
     gpio.queue_reads([0, 0])
     bus.scan()
 
-    reset_writes = [level for gpio_num, level in gpio.writes if gpio_num == bus._pins.s88_reset]
-    load_writes = [level for gpio_num, level in gpio.writes if gpio_num == bus._pins.s88_load]
-    # Reset defaults active-high (assert then release); load defaults
-    # active-low (assert 0 then release 1) -- see S88Config docstring.
-    assert reset_writes == [1, 0]
+    p = bus._pins
+    assert gpio.writes == [
+        (p.s88_load, 1),
+        (p.s88_clock, 1),
+        (p.s88_clock, 0),
+        (p.s88_reset, 1),
+        (p.s88_reset, 0),
+        (p.s88_load, 0),
+        (p.s88_clock, 1),
+        (p.s88_clock, 0),
+        (p.s88_clock, 1),
+        (p.s88_clock, 0),
+    ]
+
+
+def test_active_low_load_polarity_still_selectable():
+    bus, gpio = _bus(bits_per_module=1, load_active_high=False)
+    gpio.queue_reads([0])
+    bus.scan()
+
+    p = bus._pins
+    load_writes = [level for pin, level in gpio.writes if pin == p.s88_load]
     assert load_writes == [0, 1]
+    assert gpio.claimed_outputs[p.s88_load] == 1

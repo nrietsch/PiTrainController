@@ -168,12 +168,13 @@ for configuration and verification specific to each.
   does an SPI soft-reset and has no GPIO reset support of its own). If
   the chip fails to initialize only on cold boot but recovers after a
   warm reboot, that's worth revisiting first.
-- **S88 readings look wrong/garbled**: the S88 daughterboard hardware
-  isn't finalized yet, and the driver's RESET/LOAD polarity assumptions
-  are documented as unconfirmed in [`docs/S88.md`](S88.md) — that's the
-  first thing to check once real modules exist. `PITC_S88_LOAD_ACTIVE_HIGH`
-  / `PITC_S88_RESET_ACTIVE_HIGH` environment variables flip each without
-  code changes.
+- **S88 readings look wrong/garbled**: see [`docs/S88.md`](S88.md). Stop
+  `pitraincontroller-s88`, then run
+  `python3 -m pitraincontroller.s88.dump --modules 1` to see the raw
+  bits. With nothing connected the DATA line reads all 1s by design (a
+  pull-up on the board). `PITC_S88_LOAD_ACTIVE_HIGH` /
+  `PITC_S88_RESET_ACTIVE_HIGH` environment variables flip each polarity
+  without code changes.
 - **A `pitraincontroller-*` service is crash-looping**:
   `journalctl -u <service-name> -n 50` for the actual traceback; the
   most likely early culprits are `lgpio` not having permission to open

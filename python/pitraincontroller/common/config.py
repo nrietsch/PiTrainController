@@ -57,30 +57,23 @@ class S88Config:
     """
     S88 bus electrical/timing parameters.
 
-    Polarity defaults reflect the S88 daughterboard as currently designed
-    (74HC165 shift registers, confirmed via schematic):
-      - LOAD is active-LOW: asserting it LOW triggers the 74HC165s'
-        SH/LD# parallel-load; releasing it HIGH puts them in shift mode.
-      - CLOCK is active-HIGH: a rising edge shifts the next bit (per the
-        74HC165 datasheet), so we sample DATA *before* each clock pulse.
-      - RESET is a single active-HIGH pulse issued once per full scan,
-        before LOAD. The official Marklin CAN protocol spec describes
-        classic S88 modules as edge-latching -- a momentary sensor trigger
-        stays "set" until the bus is read/reset -- which is what RESET
-        addresses even on modules built from plain shift registers.
+    Defaults follow the classic S88 bus, as driven by the 2016 PiCanS88
+    (S88UDP.cpp, HandleS88Events) which ran against real modules: LOAD,
+    RESET and CLOCK are all active-HIGH pulses, idle LOW. CD4014-based
+    modules (e.g. the Viessmann 5217) load their inputs on a clock edge
+    while LOAD is high, so the driver pulses CLOCK once inside the LOAD
+    pulse, then RESET, then releases LOAD and reads DATA before each
+    clock. See docs/S88.md.
 
-    The S88 daughterboard hardware is still being finalized (see
-    docs/reference/hardware-manual-v4.md) -- these are best-known-good
-    defaults, not yet confirmed against a built board. Flip the relevant
-    `*_active_high` flag if real hardware disagrees; nothing else in the
-    driver needs to change.
+    A daughterboard built from 74HC165s (SH/LD# is active-LOW, async load)
+    needs LOAD inverted on the board, or set PITC_S88_LOAD_ACTIVE_HIGH=0.
     """
 
     module_count: int = field(default_factory=lambda: _env_int("PITC_S88_MODULE_COUNT", 5))
     bits_per_module: int = field(default_factory=lambda: _env_int("PITC_S88_BITS_PER_MODULE", 16))
 
     load_active_high: bool = field(
-        default_factory=lambda: _env_str("PITC_S88_LOAD_ACTIVE_HIGH", "0") == "1"
+        default_factory=lambda: _env_str("PITC_S88_LOAD_ACTIVE_HIGH", "1") == "1"
     )
     reset_active_high: bool = field(
         default_factory=lambda: _env_str("PITC_S88_RESET_ACTIVE_HIGH", "1") == "1"

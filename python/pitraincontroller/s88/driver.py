@@ -1,7 +1,8 @@
 """
-S88 bit-bang driver: implements the classic RESET -> LOAD -> (read, CLOCK)xN
-read cycle over four GPIO lines, diffs consecutive scans against the
-previous state, and reports individual bit changes via a callback.
+S88 bit-bang driver: implements the classic LOAD+CLOCK -> RESET -> release
+LOAD -> (read, CLOCK)xN read cycle over four GPIO lines, diffs consecutive
+scans against the previous state, and reports individual bit changes via a
+callback.
 
 Sequence and rationale are documented in `S88Config` (common/config.py)
 and docs/S88.md.
@@ -53,12 +54,9 @@ class S88Bus:
         self._gpio.write(self._pins.s88_reset, idle)
         time.sleep(self._config.pulse_width_s)
 
-    def _latch(self) -> None:
+    def _set_load(self, asserted: bool) -> None:
         active = 1 if self._config.load_active_high else 0
-        idle = 1 - active
-        self._gpio.write(self._pins.s88_load, active)
-        time.sleep(self._config.pulse_width_s)
-        self._gpio.write(self._pins.s88_load, idle)
+        self._gpio.write(self._pins.s88_load, active if asserted else 1 - active)
         time.sleep(self._config.pulse_width_s)
 
     def _clock_pulse(self) -> None:
@@ -73,8 +71,14 @@ class S88Bus:
         `on_change(bit_index, old, new)` is invoked once per bit whose
         value differs from the previous scan (in bit_index order).
         """
+        # Classic S88 read cycle, as in the 2016 PiCanS88: LOAD, one CLOCK
+        # pulse while LOAD is asserted (CD4014-based modules load their
+        # inputs on that edge; async-load chips ignore it), RESET, then
+        # release LOAD.
+        self._set_load(True)
+        self._clock_pulse()
         self._pulse_reset()
-        self._latch()
+        self._set_load(False)
 
         new_state = [0] * self._config.total_bits
         for i in range(self._config.total_bits):

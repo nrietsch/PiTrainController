@@ -53,7 +53,7 @@ it's summarized in each milestone's docs as it lands).
 | Milestone | What | Status |
 |---|---|---|
 | M1 | Device tree overlay + `can0` bring-up | Written — needs verification once boards exist |
-| M2 | S88 bit-bang driver | Written, core logic unit-tested — polarity assumptions flagged in [`docs/S88.md`](docs/S88.md) |
+| M2 | S88 bit-bang driver | Written, core logic unit-tested — sequence ported from the 2016 code, being bench-tested against a Viessmann 5217 (see [`docs/S88.md`](docs/S88.md)) |
 | M3 | LED status service | Written, state machine unit-tested |
 | M4 | CAN/CS2-CS3 UDP gateway | Written, framing/dedup logic unit-tested — known gaps in [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md) |
 | M5 | Rocrail integration docs | Written — see [`docs/ROCRAIL.md`](docs/ROCRAIL.md) |
