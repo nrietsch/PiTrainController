@@ -5,6 +5,8 @@ After=pitraincontroller-can0.service
 
 [Service]
 Type=simple
+# Optional settings, e.g. PITC_S88_MODULE_COUNT=1 or PITC_S88_OFF_DELAY_S=0.5
+EnvironmentFile=-/etc/default/pitraincontroller
 ExecStart=/usr/bin/python3 -m pitraincontroller.s88.service
 Restart=on-failure
 RestartSec=2

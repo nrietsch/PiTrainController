@@ -21,6 +21,7 @@ import can
 from pitraincontroller.common.config import PINS, CanConfig, S88Config, S88_ACTIVITY_SOCKET
 from pitraincontroller.common.gpio import GpioBus
 from pitraincontroller.common.marklin_can import derive_hash_placeholder, encode_s88_event
+from pitraincontroller.s88.debounce import OffDelayFilter
 from pitraincontroller.s88.driver import S88Bus
 
 logging.basicConfig(
@@ -89,9 +90,14 @@ def main() -> None:
                 log.exception("failed to send S88 event frame for contact %d", contact_id)
             log.info("S88 contact %d: %d -> %d", contact_id, old, new)
 
+        hold = OffDelayFilter(s88_config.total_bits, s88_config.off_delay_s)
+        log.info("S88 contacts stay on until off for %.2fs (PITC_S88_OFF_DELAY_S)", s88_config.off_delay_s)
+
         try:
             while True:
-                s88.scan(on_change=on_change)
+                bits = s88.scan()
+                for bit_index, old, new in hold.update(bits, time.monotonic()):
+                    on_change(bit_index, old, new)
                 _pulse_activity(activity_sock)
                 time.sleep(s88_config.poll_interval_s)
         except KeyboardInterrupt:

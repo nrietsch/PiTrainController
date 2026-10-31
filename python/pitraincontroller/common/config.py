@@ -96,6 +96,13 @@ class S88Config:
     # Poll cycle interval (time between full bus scans).
     poll_interval_s: float = field(default_factory=lambda: _env_float("PITC_S88_POLL_INTERVAL_S", 0.05))
 
+    # A contact that has gone on stays reported "on" until it has been off
+    # continuously for this long, so a wheel flickering over a dirty rail or
+    # joiner shows up as one clear occupancy instead of a burst of blips, and
+    # even a single-scan pulse is visible for at least this long. 0 reports
+    # every change as it is read. This delays "free" by the same amount.
+    off_delay_s: float = field(default_factory=lambda: _env_float("PITC_S88_OFF_DELAY_S", 0.5))
+
     @property
     def total_bits(self) -> int:
         return self.module_count * self.bits_per_module
