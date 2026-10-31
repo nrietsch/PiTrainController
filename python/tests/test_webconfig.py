@@ -87,3 +87,19 @@ def test_dropped_client_connections_are_not_logged_as_tracebacks(tmp_path, capsy
         assert "ValueError" in capsys.readouterr().err
     finally:
         srv.server_close()
+
+
+def test_request_logging_is_off_by_default_and_on_when_asked(server, monkeypatch, caplog):
+    import logging
+
+    from pitraincontroller.gateway import webconfig
+
+    srv, _ = server
+    with caplog.at_level(logging.INFO, logger="pitraincontroller.cs2web"):
+        monkeypatch.setattr(webconfig, "LOG_REQUESTS", False)
+        _get(srv, "/can/").close()
+        assert not [r for r in caplog.records if "GET /can/" in r.getMessage()]
+
+        monkeypatch.setattr(webconfig, "LOG_REQUESTS", True)
+        _get(srv, "/can/").close()
+        assert [r for r in caplog.records if "GET /can/" in r.getMessage()]

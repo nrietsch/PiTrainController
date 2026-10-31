@@ -38,6 +38,9 @@ WEB_PORT = int(os.environ.get("PITC_WEB_PORT", "80"))
 WEB_ROOT = os.environ.get("PITC_WEB_ROOT", "/var/lib/pitraincontroller/cs2")
 # e.g. /home/rocrail/rocrail_workspaces/test_track/plan.xml; unset = no sync.
 PLAN_PATH = os.environ.get("PITC_ROCRAIL_PLAN", "")
+# Set to 1 to log every request (and its status) in the journal, to see what a
+# client asks for and which of those the server can't answer (404).
+LOG_REQUESTS = os.environ.get("PITC_WEB_LOG_REQUESTS", "0") == "1"
 
 _DEFAULTS: dict[str, bytes] = {
     "/can/": b"PiTrainController CAN gateway\n",
@@ -129,7 +132,7 @@ class Cs2WebHandler(SimpleHTTPRequestHandler):
             super().do_HEAD()
 
     def log_message(self, format: str, *args: object) -> None:
-        log.debug("%s - %s", self.address_string(), format % args)
+        (log.info if LOG_REQUESTS else log.debug)("%s - %s", self.address_string(), format % args)
 
 
 class _QuietServer(ThreadingHTTPServer):

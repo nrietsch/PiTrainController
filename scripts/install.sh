@@ -108,7 +108,7 @@ echo ""
 if [ "$HAVE_WHIPTAIL" = "y" ]; then
 	SELECTED=$(whiptail --title "PiTrainController -- optional components" --checklist \
 		"Space to toggle, Enter to confirm:" 15 78 2 \
-		"gateway" "CS2/CS3 LAN gateway (Rocrail/CS2 App/network clients via UDP 15731)" ON \
+		"gateway" "CS2 LAN gateway for TrainControl, Rocrail, CS2 clients (no Rocrail needed)" ON \
 		"rocrail" "Rocrail (local GUI control on this Pi)" ON \
 		3>&1 1>&2 2>&3) || SELECTED=""
 
@@ -122,7 +122,7 @@ if [ "$HAVE_WHIPTAIL" = "y" ]; then
 	esac
 	echo "Selected: gateway=$GATEWAY_ANSWER rocrail=$ROCRAIL_ANSWER"
 else
-	ask_yn "Install the CS2/CS3 LAN gateway (lets Rocrail/CS2 App/other network clients control the layout through this Pi)?" y
+	ask_yn "Install the CS2 LAN gateway (lets TrainControl, Rocrail or other CS2 network clients control the layout through this Pi; does not need Rocrail)?" y
 	GATEWAY_ANSWER="$ANSWER"
 	ask_yn "Install Rocrail locally on this Pi (see docs/ROCRAIL.md for configuring it against can0)?" y
 	ROCRAIL_ANSWER="$ANSWER"

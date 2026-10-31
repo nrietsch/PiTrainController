@@ -70,6 +70,25 @@ curl -i http://localhost/can/
 curl -i http://localhost/config/gleisbild.cs2
 ```
 
+### Without Rocrail
+
+Rocrail is optional. The gateway, the web server, the S88 service and
+the LEDs don't depend on it, and the installer's gateway option doesn't
+need it either, so TrainControl or any CS2-compatible client works with
+just the board and a Gleisbox. The one difference is where the lists come
+from. Without `PITC_ROCRAIL_PLAN` the Pi serves empty locomotive,
+accessory and layout lists, so you add locomotives in the client
+itself (TrainControl stores them locally) and draw the track diagram
+there, or copy real `.cs2` files into `/var/lib/pitraincontroller/cs2`
+(e.g. from a real CS2). S88 contacts, track power, speed, direction,
+functions and switching are all plain CAN traffic and need no list.
+
+To see what a client asks for, set `PITC_WEB_LOG_REQUESTS=1` in
+`/etc/default/pitraincontroller`, restart `pitraincontroller-cs2web`, and
+watch `journalctl -u pitraincontroller-cs2web -f`: every request is logged
+with its status, and a 404 is something the client wanted that the Pi
+doesn't provide.
+
 ### Locomotives and switches from Rocrail
 
 Point the server at Rocrail's `plan.xml` and it builds
