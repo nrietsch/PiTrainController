@@ -131,6 +131,26 @@ Once configured, Rocrail should see the same live CAN traffic as
 `pitraincontroller-s88` (S88 feedback) and any real Gleisbox/CS2 traffic
 on the bus, with no need to route through the UDP gateway locally.
 
+## S88 sensors: set the Node ID
+
+The S88 service reports every contact change on `can0` as a Märklin
+"S88 Event" frame. Rocrail matches an incoming event to a sensor by
+**node and address**, so each sensor must be configured to match, or its
+events are logged but the sensor never reacts on the plan. In the sensor's
+**Interface** tab:
+
+| Field | Value |
+|---|---|
+| **Node ID** | **18193** (shown as `0x00004711`), the device ID the S88 service puts in every event |
+| **Address** | The S88 contact number, counting from 1 (the first input of the first module is 1) |
+| Interface ID | Leave blank, or `can0` if it's offered in the list |
+
+If the Node ID is left at its default of 0, Rocrail's console and Sensor
+monitor still show the events (as `sensor 18193:<address>`), which is the
+tell-tale: the events are arriving, they just don't match. If you change
+the device ID with `PITC_CAN_DEVICE_UID` (see `docs/S88.md`), use that
+number, in decimal, as the Node ID instead.
+
 ## Alternative: point Rocrail at the UDP gateway instead
 
 If you'd rather Rocrail (local or remote) talk over the network instead
