@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 import xml.etree.ElementTree as ET
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -131,9 +132,20 @@ class Cs2WebHandler(SimpleHTTPRequestHandler):
         log.debug("%s - %s", self.address_string(), format % args)
 
 
+class _QuietServer(ThreadingHTTPServer):
+    """Clients like TrainControl probe with short timeouts and drop the
+    connection; that isn't an error worth a traceback in the journal."""
+
+    def handle_error(self, request: object, client_address: object) -> None:
+        if isinstance(sys.exc_info()[1], (ConnectionResetError, ConnectionAbortedError, BrokenPipeError)):
+            log.debug("client %s dropped the connection", client_address)
+            return
+        super().handle_error(request, client_address)
+
+
 def make_server(port: int, root: str, host: str = "", plan_path: str | None = None) -> ThreadingHTTPServer:
     handler = partial(Cs2WebHandler, directory=root, plan_path=plan_path)
-    return ThreadingHTTPServer((host, port), handler)
+    return _QuietServer((host, port), handler)
 
 
 def main() -> None:

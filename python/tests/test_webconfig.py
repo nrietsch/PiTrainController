@@ -69,3 +69,21 @@ def test_path_traversal_does_not_escape_root(server):
     with pytest.raises(urllib.error.HTTPError) as err:
         _get(srv, "/../../../../etc/passwd")
     assert err.value.code in (400, 404)
+
+
+def test_dropped_client_connections_are_not_logged_as_tracebacks(tmp_path, capsys):
+    srv = make_server(0, str(tmp_path), host="127.0.0.1")
+    try:
+        try:
+            raise ConnectionResetError("client went away")
+        except ConnectionResetError:
+            srv.handle_error(None, ("127.0.0.1", 1))
+        assert capsys.readouterr().err == ""
+
+        try:
+            raise ValueError("a real error")
+        except ValueError:
+            srv.handle_error(None, ("127.0.0.1", 1))
+        assert "ValueError" in capsys.readouterr().err
+    finally:
+        srv.server_close()
