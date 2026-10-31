@@ -25,7 +25,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
 
-from pitraincontroller.gateway import rocrail_plan
+from pitraincontroller.gateway import rocrail_layout, rocrail_plan
 
 logging.basicConfig(
     level=os.environ.get("PITC_LOG_LEVEL", "INFO"),
@@ -48,6 +48,9 @@ _DEFAULTS: dict[str, bytes] = {
 }
 
 
+_GENERATED_PATHS = ("/config/lokomotive.cs2", "/config/magnetartikel.cs2", "/config/gleisbild.cs2")
+
+
 def _normalize(path: str) -> str:
     p = unquote(urlsplit(path).path)
     return "/can/" if p == "/can" else p
@@ -65,19 +68,28 @@ def generated_body(path: str, plan_path: str | None) -> bytes | None:
     configured, the path isn't one we generate, or the plan can't be read.
     """
     p = _normalize(path)
-    if not plan_path or p not in ("/config/lokomotive.cs2", "/config/magnetartikel.cs2"):
+    is_page = p.startswith("/config/gleisbilder/") and p.endswith(".cs2")
+    if not plan_path or not (is_page or p in _GENERATED_PATHS):
         return None
     try:
         with open(plan_path, encoding="utf-8") as f:
             text = f.read()
         session_id = int(os.path.getmtime(plan_path)) & 0x7FFFFFFF
-        locos, switches = rocrail_plan.parse_plan(text)
+        if p == "/config/lokomotive.cs2":
+            return rocrail_plan.build_lokomotive_cs2(rocrail_plan.parse_plan(text)[0], session_id).encode("utf-8")
+        if p == "/config/magnetartikel.cs2":
+            return rocrail_plan.build_magnetartikel_cs2(rocrail_plan.parse_plan(text)[1], session_id).encode("utf-8")
+        pages = rocrail_layout.parse_pages(text)
+        if p == "/config/gleisbild.cs2":
+            return rocrail_layout.build_gleisbild_cs2(pages).encode("utf-8") if pages else None
+        name = p[len("/config/gleisbilder/"):-len(".cs2")]
+        for index, page in enumerate(pages, start=1):
+            if page.name == name:
+                return rocrail_layout.build_page_cs2(page, index).encode("utf-8")
+        return None
     except (OSError, ValueError, ET.ParseError):
         log.warning("could not read Rocrail plan %s; serving the default for %s", plan_path, p, exc_info=True)
         return None
-    if p == "/config/lokomotive.cs2":
-        return rocrail_plan.build_lokomotive_cs2(locos, session_id).encode("utf-8")
-    return rocrail_plan.build_magnetartikel_cs2(switches, session_id).encode("utf-8")
 
 
 class Cs2WebHandler(SimpleHTTPRequestHandler):

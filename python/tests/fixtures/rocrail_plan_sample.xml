@@ -1,11 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plan title="Test Track">
+  <zlevel title="Level 0"/>
   <lclist>
     <lc id="BR260" addr="5" prot="L" fncnt="4" active="true"/>
     <lc id="BR103" addr="15" prot="N" fncnt="32" active="true"/>
   </lclist>
+  <tklist>
+    <tk type="buffer" id="tk3" x="19" y="2" z="0"/>
+    <tk type="buffer" id="tk7" x="6" y="2" z="0" ori="east"/>
+    <tk type="curve" id="tk28" x="10" y="3" z="0" ori="east"/>
+    <tk type="curve" id="tk29" x="15" y="3" z="0" ori="south"/>
+  </tklist>
+  <fblist>
+    <fb id="fb1" x="9" y="2" z="0" addr="1"/>
+    <fb id="fb3" x="11" y="2" z="0" addr="3"/>
+    <fb id="fb2" x="11" y="3" z="0" addr="2"/>
+    <fb id="fb4" x="14" y="3" z="0" addr="4"/>
+    <fb id="fb5" x="14" y="2" z="0" addr="5"/>
+    <fb id="fb6" x="16" y="2" z="0" addr="6"/>
+  </fblist>
+  <bklist>
+    <bk id="bk1" x="7" y="2" z="0" smallsymbol="true"/>
+    <bk id="bk2" x="12" y="3" z="0" smallsymbol="true"/>
+    <bk id="bk3" x="12" y="2" z="0" smallsymbol="true"/>
+    <bk id="bk4" x="17" y="2" z="0" smallsymbol="true"/>
+  </bklist>
   <swlist>
-    <sw id="sw1" type="right" addr1="1" port1="0" prot="D"/>
-    <sw id="sw2" type="left" addr1="2" port1="0" prot="D"/>
+    <sw id="sw1" type="right" x="10" y="2" z="0" addr1="1" port1="0" prot="D"/>
+    <sw id="sw2" type="left" x="15" y="2" z="0" addr1="2" port1="0" prot="D"/>
   </swlist>
 </plan>

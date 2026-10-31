@@ -87,6 +87,25 @@ source of truth, and `plan.xml` is only ever read. Precedence per file: a
 real file in `/var/lib/pitraincontroller/cs2` wins, then the file
 generated from the plan, then the empty default.
 
+The track diagram is generated the same way, from the track items in
+the plan ([`gateway/rocrail_layout.py`](../python/pitraincontroller/gateway/rocrail_layout.py)),
+one page per Rocrail level, served as `/config/gleisbild.cs2` and
+`/config/gleisbilder/<page>.cs2`. In TrainControl it appears under
+**Layouts**, in the "Central Station Layout" section. What it draws:
+- Straight and curved track, buffers, feedback contacts (as `s88kontakt`
+  with the Rocrail feedback address) and left/right switches (accessory
+  address `addr1`).
+- Blocks become runs of straights: 2 for a small symbol, 4 for a normal
+  one (running along y if the block is oriented north/south). Block names
+  aren't drawn.
+- Orientation is worked out from which neighbouring tiles connect, using
+  TrainControl's own tile geometry, and not from Rocrail's `ori`, which
+  is only a fallback. When the neighbours don't settle a curve, buffer or
+  switch, the pipeline logs a warning
+  (`journalctl -u pitraincontroller-cs2web`) and guesses, so check those
+  pieces first if a diagram looks wrong.
+- Signals, outputs, text, routes and other items are not exported.
+
 What's exported ([`gateway/rocrail_plan.py`](../python/pitraincontroller/gateway/rocrail_plan.py)):
 - Locomotives: id, address, up to 32 functions. Rocrail protocol `N`
   (NMRA-DCC) and `L` (NMRA-DCC long) become DCC; `M` is assumed to be
