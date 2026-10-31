@@ -136,7 +136,8 @@ on the bus, with no need to route through the UDP gateway locally.
 If you'd rather Rocrail (local or remote) talk over the network instead
 of binding `can0` directly — e.g. testing the gateway itself, or running
 Rocrail on a different machine — configure Rocrail's **CS2** controller
-type (network/UDP, not MBUS) against this Pi's IP address, port 15731.
+type (network/UDP, not MBUS) against this Pi's IP address (Rocrail uses
+15731 to send and 15730 to receive, matching the gateway).
 This exercises `pitraincontroller-gateway` instead of bypassing it.
 
 Both a local Rocrail-via-`can0` and a remote Rocrail-via-gateway can be

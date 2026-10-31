@@ -42,17 +42,21 @@ logging.basicConfig(
 )
 log = logging.getLogger("pitraincontroller.gateway")
 
+# Same split as a real CS2/CS3: it receives from clients on 15731 and sends
+# (broadcasts) its CAN traffic to clients on 15730, which is where CS2-
+# compatible software (TrainControl, Rocrail, the CS2 App) listens. The
+# 2016 PiCanS88 did the same (listen 15731, destination 15730).
 UDP_PORT = 15731
+UDP_SEND_PORT = int(os.environ.get("PITC_GATEWAY_SEND_PORT", "15730"))
 BROADCAST_ADDR = os.environ.get("PITC_GATEWAY_BROADCAST_ADDR", "255.255.255.255")
 
-# UDP broadcast sent from this process can be delivered straight back to
-# this process's own listening socket on the same host. Without
-# filtering that out, a CAN->UDP relay would loop straight back around
-# as a UDP->CAN relay and duplicate every frame onto the bus. This
-# window-based dedup catches that; it's a heuristic (an unrelated device
-# emitting an identical id+data pair within the window would also be
-# dropped), not a protocol-level solution -- fine for a bridge, would
-# need revisiting for anything relying on frame delivery guarantees.
+# Safety net against a UDP broadcast sent from this process being delivered
+# straight back to its own listening socket (only possible if the send and
+# listen ports are ever configured to match). Without filtering that out,
+# a CAN->UDP relay would loop straight back around as a UDP->CAN relay and
+# duplicate every frame onto the bus. This window-based dedup catches that;
+# it's a heuristic (an unrelated device emitting an identical id+data pair
+# within the window would also be dropped), not a protocol-level solution.
 ECHO_DEDUP_WINDOW_S = float(os.environ.get("PITC_GATEWAY_ECHO_DEDUP_WINDOW_S", "0.2"))
 
 # A Gleisbox stays silent until it sees the "magic start" frame, so send it
@@ -98,8 +102,8 @@ def main() -> None:
     dedup = EchoDedup(ECHO_DEDUP_WINDOW_S)
 
     log.info(
-        "CS2/CS3 gateway starting: %s <-> UDP broadcast %s:%d",
-        can_config.interface, BROADCAST_ADDR, UDP_PORT,
+        "CS2/CS3 gateway starting: %s <-> UDP (listening on %d, broadcasting to %s:%d)",
+        can_config.interface, UDP_PORT, BROADCAST_ADDR, UDP_SEND_PORT,
     )
 
     if SEND_MAGIC_START:
@@ -120,7 +124,7 @@ def main() -> None:
                 data = bytes(msg.data)
                 dedup.note_sent(msg.arbitration_id, data)
                 try:
-                    udp_sock.sendto(pack_udp_frame(msg.arbitration_id, data), (BROADCAST_ADDR, UDP_PORT))
+                    udp_sock.sendto(pack_udp_frame(msg.arbitration_id, data), (BROADCAST_ADDR, UDP_SEND_PORT))
                 except OSError:
                     log.exception("failed to send UDP frame")
 

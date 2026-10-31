@@ -40,8 +40,9 @@ derived from it.
   work at once, without arbitration).
 - **S88**: Python service bit-banging the RESET/LOAD/CLOCK/DATA GPIOs,
   publishing sensor changes as S88-over-CAN feedback frames onto `can0`.
-- **CS2/CS3 emulation**: Python gateway relaying `can0` ↔ UDP broadcast
-  15731 per the official Märklin CAN protocol spec.
+- **CS2/CS3 emulation**: Python gateway relaying `can0` ↔ UDP, receiving
+  from clients on port 15731 and broadcasting CAN traffic to them on
+  15730, like a real CS2/CS3.
 - **LEDs**: Python service implementing the manual's boot/heartbeat/fault
   and activity-blink behavior.
 

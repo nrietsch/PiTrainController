@@ -14,7 +14,8 @@ otherwise interprets it as one CAN frame:
     bytes 5-12 data, zero-padded out to 8 bytes if DLC < 8
 
 Traffic in the other direction (CAN -> UDP) uses the identical framing,
-broadcast to the LAN.
+broadcast to the LAN on UDP port 15730 -- clients send to 15731 and listen
+on 15730, as with a real CS2/CS3.
 """
 
 from __future__ import annotations

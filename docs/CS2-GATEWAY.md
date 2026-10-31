@@ -7,8 +7,13 @@ Implementation: [`python/pitraincontroller/gateway/protocol.py`](../python/pitra
 
 ## What it does
 
-A byte-transparent relay between `can0` (SocketCAN) and UDP broadcast
-port 15731, using the same 13-byte-per-frame framing real Marklin
+A byte-transparent relay between `can0` (SocketCAN) and UDP, using the
+same port split as a real CS2/CS3: it **receives** frames from clients
+on UDP 15731 and **broadcasts** CAN traffic to clients on UDP 15730
+(`PITC_GATEWAY_SEND_PORT`, `PITC_GATEWAY_BROADCAST_ADDR` to change). CS2
+software such as TrainControl, Rocrail's CS2 driver and the CS2 App
+listens on 15730, so sending on the wrong port makes the gateway look
+dead ("No response from <ip>"). It uses the same 13-byte-per-frame framing real Marklin
 CAN2LAN gateways (the CS2, CS3, and Gleisbox 60113) use: 4-byte
 big-endian CAN ID, 1-byte DLC, 8-byte data (zero-padded if DLC<8).
 Anything on either side is forwarded as-is to the other — this process
