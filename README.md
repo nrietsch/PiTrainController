@@ -53,22 +53,27 @@ it's summarized in each milestone's docs as it lands).
 
 | Milestone | What | Status |
 |---|---|---|
-| M1 | Device tree overlay + `can0` bring-up | Written — needs verification once boards exist |
-| M2 | S88 bit-bang driver | Written, core logic unit-tested — sequence ported from the 2016 code, being bench-tested against a Viessmann 5217 (see [`docs/S88.md`](docs/S88.md)) |
+| M1 | Device tree overlay + `can0` bring-up | Verified on real hardware (PCB v4.0 needs the VDDA fix, see below) |
+| M2 | S88 bit-bang driver | Verified against a commercial S88 module (Viessmann-type, CD4014-based); events reach TrainControl and Rocrail — see [`docs/S88.md`](docs/S88.md) |
 | M3 | LED status service | Written, state machine unit-tested |
-| M4 | CAN/CS2-CS3 UDP gateway | Written, framing/dedup logic unit-tested — known gaps in [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md) |
-| M5 | Rocrail integration docs | Written — see [`docs/ROCRAIL.md`](docs/ROCRAIL.md) |
+| M4 | CAN/CS2 gateway + CS2-style web config server | Verified with TrainControl 3.0.6 in CS2 mode (connect, drive a loco, S88 contacts) — see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md) |
+| M5 | Rocrail integration docs | Rocrail sees S88 contacts; see [`docs/ROCRAIL.md`](docs/ROCRAIL.md) |
 | M6 | systemd units + installer + full install guide | Written — `scripts/install.sh` |
 
-All six milestones have code and docs in the repo. No boards have been
-fabricated yet (still finalizing the S88 module design), so **none of
-this has run end-to-end on real hardware** — what's been verified so
-far is: device tree overlay syntax by careful manual review (no `dtc`
-available off-Pi), and every piece of pure logic (S88 scan/diff, LED
-state machine, Marklin CAN frame encoding, CS2 LAN wire framing, echo
-dedup) by unit test with fake/mocked I/O. GPIO timing, real CAN bus
-behavior, and the S88 daughterboard's actual signal polarity all still
-need real hardware to confirm.
+All six milestones have code and docs in the repo, and boards have been
+built and brought up on real hardware. Things to know:
+
+- **PCB v4.0 errata**: the MCP25625's transceiver supply pin (VDDA,
+  pin 27) is wired to 3.3V but needs 5V, so built boards need pin 27
+  moved to the 5V rail — see
+  [`docs/reference/hardware-manual-v4.md`](docs/reference/hardware-manual-v4.md).
+- **CS2 only, not a CS3 clone**: the Pi answers as a CS2 (UDP 15731/15730
+  plus a small HTTP config server on port 80). The CS3's JSON API
+  (`/app/api/...`) is not implemented, and the locomotive/accessory
+  lists in `/var/lib/pitraincontroller/cs2` start empty.
+- **Not yet verified**: the S88 daughterboard (still being designed),
+  long-running stability, and CS2-compatible clients other than
+  TrainControl and Rocrail.
 
 ## Getting started
 

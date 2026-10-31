@@ -180,8 +180,12 @@ interactively when you need it.
   for a live multi-device bus. Worth implementing properly here once
   real hardware exists to test against, since the gateway is the
   natural place for all Marklin protocol-level logic to live.
-- **Only partly verified against real hardware.** Confirmed on a real
-  Pi + Gleisbox: the CAN link itself (magic start, ping reply). The
-  framing is verified by unit test; the relay loop, SocketCAN sharing
-  with Rocrail, and UDP broadcast delivery on a real LAN still need a
-  Rocrail/CS2 App to confirm end-to-end.
+- **Verified so far** (real Pi + Gleisbox, Windows PC on the same LAN):
+  the CAN link (magic start, ping reply); TrainControl 3.0.6 in CS2 mode
+  connects (UDP on 15731/15730 and the HTTP check), a locomotive can be
+  added and driven, and S88 contact changes show up in both TrainControl
+  and Rocrail running side by side. Not verified: the Märklin CS2 App,
+  other CS2-compatible clients, long-running stability.
+- **CS2 only.** There's no CS3 JSON API (`/app/api/...`), and the served
+  locomotive/accessory/route lists start empty (locomotives added in
+  TrainControl are stored by TrainControl, not by the Pi).

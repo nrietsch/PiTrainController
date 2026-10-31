@@ -75,9 +75,11 @@ This sets up, in order:
    `whiptail`, same tool `raspi-config` uses — falls back to plain
    yes/no prompts if it's unavailable) to choose which optional pieces
    to install:
-   - The **CS2/CS3 LAN gateway** (lets Rocrail, the Marklin CS2 App, or
-     other network clients control the layout through this Pi — see
-     [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md)).
+   - The **CS2 LAN gateway** (lets TrainControl, Rocrail, or other CS2
+     network clients control the layout through this Pi). It installs
+     two services: `pitraincontroller-gateway` (CAN to UDP) and
+     `pitraincontroller-cs2web` (the HTTP config files CS2 clients check
+     for) — see [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md).
    - **Rocrail**, downloaded and extracted automatically (it's not an
      apt package — see [`docs/ROCRAIL.md`](ROCRAIL.md)), though a final
      manual step is needed from a real desktop session to finish setup;
@@ -108,15 +110,24 @@ happens automatically on future boots):
 
 ```bash
 sudo systemctl start pitraincontroller-can0 pitraincontroller-s88 pitraincontroller-leds
-sudo systemctl start pitraincontroller-gateway   # if you installed it
+sudo systemctl start pitraincontroller-gateway pitraincontroller-cs2web   # if you installed the gateway
 ```
 
 Check they're actually running and not crash-looping:
 
 ```bash
-systemctl status pitraincontroller-can0 pitraincontroller-s88 pitraincontroller-leds pitraincontroller-gateway
+systemctl status pitraincontroller-can0 pitraincontroller-s88 pitraincontroller-leds pitraincontroller-gateway pitraincontroller-cs2web
 journalctl -u pitraincontroller-s88 -u pitraincontroller-leds -u pitraincontroller-gateway -f
 ```
+
+### Connect a CS2 client (TrainControl)
+
+With the gateway installed, enter the Pi's IP address in
+[TrainControl](https://github.com/bob123456678/TrainControl) (CS2 mode)
+from a PC on the same network. Quick checks if it reports "No response":
+`curl -i http://<pi-ip>/config/gleisbild.cs2` must return 200, and the
+gateway log should say it's listening on 15731 and broadcasting to 15730.
+See [`docs/CS2-GATEWAY.md`](CS2-GATEWAY.md) for why both are needed.
 
 ### Confirm real CAN traffic
 
