@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plan title="Test Track">
+  <lclist>
+    <lc id="BR260" addr="5" prot="L" fncnt="4" active="true"/>
+    <lc id="BR103" addr="15" prot="N" fncnt="32" active="true"/>
+  </lclist>
+  <swlist>
+    <sw id="sw1" type="right" addr1="1" port1="0" prot="D"/>
+    <sw id="sw2" type="left" addr1="2" port1="0" prot="D"/>
+  </swlist>
+</plan>

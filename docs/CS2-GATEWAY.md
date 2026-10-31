@@ -70,8 +70,37 @@ curl -i http://localhost/can/
 curl -i http://localhost/config/gleisbild.cs2
 ```
 
-Not covered: the CS3's JSON API (`/app/api/...`), and generating `.cs2`
-files from a Rocrail plan.
+### Locomotives and switches from Rocrail
+
+Point the server at Rocrail's `plan.xml` and it builds
+`lokomotive.cs2` and `magnetartikel.cs2` from the locomotives and switches
+defined there, reading the plan fresh on every request so nothing goes
+stale. Create `/etc/default/pitraincontroller` containing
+
+```
+PITC_ROCRAIL_PLAN=/home/rocrail/rocrail_workspaces/test_track/plan.xml
+```
+
+and restart `pitraincontroller-cs2web`. Then in TrainControl use
+**Locomotives → Sync w/ Central Station**. It's one way: Rocrail is the
+source of truth, and `plan.xml` is only ever read. Precedence per file: a
+real file in `/var/lib/pitraincontroller/cs2` wins, then the file
+generated from the plan, then the empty default.
+
+What's exported ([`gateway/rocrail_plan.py`](../python/pitraincontroller/gateway/rocrail_plan.py)):
+- Locomotives: id, address, up to 32 functions. Rocrail protocol `N` and
+  `L` become DCC and `M` becomes MM2; any other code is logged and
+  treated as MM2, because the meaning of Rocrail's other protocol
+  letters wasn't confirmed from its docs. If a loco shows up with the
+  wrong type in TrainControl, check its `prot` in `plan.xml`.
+- Switches: id, `addr1` (ports aren't mapped), type left/right/three-way.
+  Rocrail's default protocol `D` is exported as MM2.
+- Not exported: signals, outputs, routes, blocks, function names.
+
+TrainControl adds new items on sync; I haven't verified that it removes
+locomotives deleted in Rocrail or handles a renamed one cleanly.
+
+Not covered: the CS3's JSON API (`/app/api/...`).
 
 ## Waking the Gleisbox ("magic start") and the ping test
 

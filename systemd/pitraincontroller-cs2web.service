@@ -4,6 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
+# Optional settings, e.g. PITC_ROCRAIL_PLAN=/home/rocrail/rocrail_workspaces/test_track/plan.xml
+EnvironmentFile=-/etc/default/pitraincontroller
 ExecStart=/usr/bin/python3 -m pitraincontroller.gateway.webconfig
 Restart=on-failure
 RestartSec=2
