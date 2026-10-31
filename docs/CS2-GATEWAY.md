@@ -81,7 +81,10 @@ stale. Create `/etc/default/pitraincontroller` containing
 PITC_ROCRAIL_PLAN=/home/rocrail/rocrail_workspaces/test_track/plan.xml
 ```
 
-and restart `pitraincontroller-cs2web`. Then in TrainControl use
+and restart `pitraincontroller-cs2web` (a service only reads that file
+when it starts, and also needs a restart after a `git pull`; the journal
+line "locomotives and switches are generated from the Rocrail plan"
+confirms the path was picked up). Then in TrainControl use
 **Locomotives → Sync w/ Central Station**. It's one way: Rocrail is the
 source of truth, and `plan.xml` is only ever read. Precedence per file: a
 real file in `/var/lib/pitraincontroller/cs2` wins, then the file
@@ -231,9 +234,14 @@ interactively when you need it.
 - **Verified so far** (real Pi + Gleisbox, Windows PC on the same LAN):
   the CAN link (magic start, ping reply); TrainControl 3.0.6 in CS2 mode
   connects (UDP on 15731/15730 and the HTTP check), a locomotive can be
-  added and driven, and S88 contact changes show up in both TrainControl
-  and Rocrail running side by side. Not verified: the Märklin CS2 App,
-  other CS2-compatible clients, long-running stability.
-- **CS2 only.** There's no CS3 JSON API (`/app/api/...`), and the served
-  locomotive/accessory/route lists start empty (locomotives added in
-  TrainControl are stored by TrainControl, not by the Pi).
+  driven, and S88 contact changes show up in both TrainControl and
+  Rocrail running side by side. With the Rocrail plan configured, the
+  locomotives sync into TrainControl (a deleted loco came back with its
+  DCC address and type) and the track diagram loads in the Layouts menu
+  with the sensors reacting. Not verified: switches (no decoder fitted
+  yet), the Märklin CS2 App, other CS2-compatible clients, long-running
+  stability.
+- **CS2 only.** There's no CS3 JSON API (`/app/api/...`). Without
+  `PITC_ROCRAIL_PLAN` the served locomotive/accessory/route lists start
+  empty (locomotives added by hand in TrainControl are stored by
+  TrainControl, not by the Pi).

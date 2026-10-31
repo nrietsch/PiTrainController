@@ -56,7 +56,7 @@ it's summarized in each milestone's docs as it lands).
 | M1 | Device tree overlay + `can0` bring-up | Verified on real hardware (PCB v4.0 needs the VDDA fix, see below) |
 | M2 | S88 bit-bang driver | Verified against a commercial S88 module (Viessmann-type, CD4014-based); events reach TrainControl and Rocrail — see [`docs/S88.md`](docs/S88.md) |
 | M3 | LED status service | Written, state machine unit-tested |
-| M4 | CAN/CS2 gateway + CS2-style web config server | Verified with TrainControl 3.0.6 in CS2 mode (connect, drive a loco, S88 contacts) — see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md) |
+| M4 | CAN/CS2 gateway + CS2-style web config server | Verified with TrainControl 3.0.6 in CS2 mode (connect, drive a loco, S88 contacts, locos and track diagram synced from the Rocrail plan) — see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md) |
 | M5 | Rocrail integration docs | Rocrail sees S88 contacts; see [`docs/ROCRAIL.md`](docs/ROCRAIL.md) |
 | M6 | systemd units + installer + full install guide | Written — `scripts/install.sh` |
 
