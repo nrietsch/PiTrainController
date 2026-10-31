@@ -1,0 +1,13 @@
+[Unit]
+Description=PiTrainController CS2-style web config server (HTTP port 80)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m pitraincontroller.gateway.webconfig
+Restart=on-failure
+RestartSec=2
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -131,13 +131,14 @@ fi
 # --- Apply: CS2/CS3 LAN gateway ---
 if [ "$GATEWAY_ANSWER" = "y" ]; then
 	install -m 644 "$REPO_DIR/systemd/pitraincontroller-gateway.service" /etc/systemd/system/
+	install -m 644 "$REPO_DIR/systemd/pitraincontroller-cs2web.service" /etc/systemd/system/
 	systemctl daemon-reload
-	systemctl enable pitraincontroller-gateway.service
+	systemctl enable pitraincontroller-gateway.service pitraincontroller-cs2web.service
 	GATEWAY_INSTALLED=y
 else
 	echo "Skipping the CS2/CS3 gateway. You can install it later:"
-	echo "  sudo install -m 644 $REPO_DIR/systemd/pitraincontroller-gateway.service /etc/systemd/system/"
-	echo "  sudo systemctl daemon-reload && sudo systemctl enable --now pitraincontroller-gateway.service"
+	echo "  sudo install -m 644 $REPO_DIR/systemd/pitraincontroller-gateway.service $REPO_DIR/systemd/pitraincontroller-cs2web.service /etc/systemd/system/"
+	echo "  sudo systemctl daemon-reload && sudo systemctl enable --now pitraincontroller-gateway.service pitraincontroller-cs2web.service"
 	GATEWAY_INSTALLED=n
 fi
 
@@ -183,7 +184,7 @@ echo "  sudo reboot"
 echo "  scripts/verify_can0.sh"
 echo "  sudo systemctl start pitraincontroller-can0 pitraincontroller-s88 pitraincontroller-leds"
 if [ "$GATEWAY_INSTALLED" = "y" ]; then
-	echo "  sudo systemctl start pitraincontroller-gateway"
+	echo "  sudo systemctl start pitraincontroller-gateway pitraincontroller-cs2web"
 fi
 if [ "$ROCRAIL_INSTALLED" = "y" ]; then
 	echo ""

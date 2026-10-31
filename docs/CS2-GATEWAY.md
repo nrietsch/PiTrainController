@@ -42,6 +42,37 @@ real devices emitting an identical `(id, data)` pair within the dedup
 window would also get one of them dropped. Fine for a bridge; would need
 revisiting for anything relying on strict delivery guarantees.
 
+## Web config server (HTTP port 80)
+
+CS2-compatible software doesn't use CAN-over-UDP alone. It also decides
+whether an IP address is a Central Station by fetching files from the
+station over HTTP. TrainControl, for example, pings `http://<ip>/can/`
+at startup, treats the host as a station if
+`http://<ip>/config/gleisbild.cs2` answers 200, then reads
+`/config/lokomotive.cs2`, `magnetartikel.cs2`, `fahrstrassen.cs2` and
+`gleisbilder/*.cs2`. Without a web server it reports "No response from
+<ip>" even when the UDP side works.
+
+`pitraincontroller-cs2web` (installed with the gateway) serves
+`/var/lib/pitraincontroller/cs2` on port 80 (`PITC_WEB_PORT`,
+`PITC_WEB_ROOT` to change). Files are laid out as on a CS2:
+`config/lokomotive.cs2`, `config/gleisbilder/<name>.cs2`, and so on. Any
+file that's missing falls back to a minimal empty-but-valid default, so
+the station is recognised with empty loco/accessory/route lists. Copy
+real `.cs2` files into that directory (for example from a real CS2) to
+give clients something to show. Implementation:
+[`gateway/webconfig.py`](../python/pitraincontroller/gateway/webconfig.py).
+
+Check it from the Pi:
+
+```bash
+curl -i http://localhost/can/
+curl -i http://localhost/config/gleisbild.cs2
+```
+
+Not covered: the CS3's JSON API (`/app/api/...`), and generating `.cs2`
+files from a Rocrail plan.
+
 ## Waking the Gleisbox ("magic start") and the ping test
 
 A Gleisbox stays silent until it sees a non-spec "magic start" frame
