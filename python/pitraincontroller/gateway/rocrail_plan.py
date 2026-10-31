@@ -9,10 +9,11 @@ name on its own line, then ` .key=value` lines, with repeated ` .funktionen`
 sub-blocks of ` ..nr=` / ` ..typ=` for locomotive functions.
 
 Mapping, with what is and isn't known:
-- Locomotive: Rocrail `id` -> name, `addr` -> address, `prot` N or L -> dcc,
-  M -> mm2. Other protocol codes are logged and treated as mm2 (the CS2
-  default); the exact meaning of Rocrail's `prot` letters beyond these wasn't
-  confirmed from Rocrail's docs. `fncnt` -> number of functions (1..32).
+- Locomotive: Rocrail `id` -> name, `addr` -> address, `prot` N (NMRA-DCC)
+  or L (NMRA-DCC long, both confirmed by the user against Rocrail's UI) ->
+  dcc, M -> mm2 (assumed to be Motorola). Other protocol codes are logged
+  and treated as mm2 (the CS2 default). `fncnt` -> number of functions
+  (1..32).
 - Switch: Rocrail `id` -> name, `addr1` -> accessory id (ports are not
   mapped), `prot` N -> dcc, M or D (Rocrail's default) -> mm2, `type` right /
   left / threeway -> rechtsweiche / linksweiche / dreiwegweiche, anything else

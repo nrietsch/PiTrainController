@@ -88,11 +88,11 @@ real file in `/var/lib/pitraincontroller/cs2` wins, then the file
 generated from the plan, then the empty default.
 
 What's exported ([`gateway/rocrail_plan.py`](../python/pitraincontroller/gateway/rocrail_plan.py)):
-- Locomotives: id, address, up to 32 functions. Rocrail protocol `N` and
-  `L` become DCC and `M` becomes MM2; any other code is logged and
-  treated as MM2, because the meaning of Rocrail's other protocol
-  letters wasn't confirmed from its docs. If a loco shows up with the
-  wrong type in TrainControl, check its `prot` in `plan.xml`.
+- Locomotives: id, address, up to 32 functions. Rocrail protocol `N`
+  (NMRA-DCC) and `L` (NMRA-DCC long) become DCC; `M` is assumed to be
+  Motorola and becomes MM2. Any other code is logged and treated as MM2,
+  because the other letters haven't been confirmed. If a loco shows up
+  with the wrong type in TrainControl, check its `prot` in `plan.xml`.
 - Switches: id, `addr1` (ports aren't mapped), type left/right/three-way.
   Rocrail's default protocol `D` is exported as MM2.
 - Not exported: signals, outputs, routes, blocks, function names.
