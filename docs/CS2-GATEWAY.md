@@ -284,8 +284,8 @@ interactively when you need it.
   yet), the Märklin CS2 App, other CS2-compatible clients, long-running
   stability.
 - **CS2 by default.** CS3 mode (`PITC_WEB_STATION=cs3`) serves the locomotive
-  and switch lists but is experimental and untested against a running
-  client; there are no routes, icons or the CS3 app's other endpoints. Without
+  and switch lists. It's experimental: verified with TrainControl 3.0.6
+  only, and there are no routes, icons or the CS3 app's other endpoints. Without
   `PITC_ROCRAIL_PLAN` the served locomotive/accessory/route lists start
   empty (locomotives added by hand in TrainControl are stored by
   TrainControl, not by the Pi).

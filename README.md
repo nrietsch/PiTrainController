@@ -69,9 +69,10 @@ built and brought up on real hardware. Things to know:
   [`docs/reference/hardware-manual-v4.md`](docs/reference/hardware-manual-v4.md).
 - **A CS2, with an experimental CS3 mode**: the Pi answers as a CS2 (UDP
   15731/15730 plus a small HTTP config server on port 80). The CS3's JSON
-  lists (locos, switches) are available behind `PITC_WEB_STATION=cs3` but
-  haven't been tried against a running client, and there are no routes or
-  icons. Locomotive/accessory lists start empty unless generated from a
+  lists (locos, switches) are available behind `PITC_WEB_STATION=cs3`;
+  TrainControl 3.0.6 detects the Pi as a CS3 and imports locomotives
+  through them. There are no routes or icons, and other CS3 clients
+  (including Märklin's own app) are untested. Locomotive/accessory lists start empty unless generated from a
   Rocrail plan; see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md).
 - **Not yet verified**: the S88 daughterboard (still being designed),
   long-running stability, and CS2-compatible clients other than
