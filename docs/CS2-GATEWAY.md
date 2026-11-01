@@ -141,7 +141,28 @@ What's exported ([`gateway/rocrail_plan.py`](../python/pitraincontroller/gateway
 TrainControl adds new items on sync; I haven't verified that it removes
 locomotives deleted in Rocrail or handles a renamed one cleanly.
 
-Not covered: the CS3's JSON API (`/app/api/...`).
+### Presenting as a CS3 (experimental)
+
+TrainControl chooses between its CS2 and CS3 database formats by reading
+`/config/geraet.vrs` and looking for the text "Central Station 3". By
+default the Pi says "PiTrainController", so clients use the `.cs2`
+files above. With `PITC_WEB_STATION=cs3` in `/etc/default/pitraincontroller`
+(then restart `pitraincontroller-cs2web`), the Pi announces itself as a
+CS3 instead, and a client that supports it uses the CS3 JSON lists:
+- `/app/api/locos` (CS3 firmware 2.6+ layout): locomotives from the Rocrail
+  plan, with the protocol base in `uid`, as a CS3 does.
+- `/app/api/mags`: switches from the plan.
+- `/app/api/automatics`: always an empty list (no routes).
+
+Without a plan all three are empty lists. The `.cs2` layout and accessory
+files are still served, since TrainControl reads layouts from them in CS3
+mode too. Not provided: the older firmware's `/app/api/loks`, loco and
+function icon images (`/app/assets/...`, so pictures stay blank), and
+anything the CS3's own app needs beyond these lists. This has been tested
+against TrainControl's published CS3 file formats but not yet against a
+running TrainControl; set `PITC_WEB_LOG_REQUESTS=1` to see what a client
+asks for and which requests the Pi can't answer. To go back to CS2
+mode, remove the setting and restart the service.
 
 ## Waking the Gleisbox ("magic start") and the ping test
 
@@ -260,7 +281,9 @@ interactively when you need it.
   with the sensors reacting. Not verified: switches (no decoder fitted
   yet), the Märklin CS2 App, other CS2-compatible clients, long-running
   stability.
-- **CS2 only.** There's no CS3 JSON API (`/app/api/...`). Without
+- **CS2 by default.** CS3 mode (`PITC_WEB_STATION=cs3`) serves the locomotive
+  and switch lists but is experimental and untested against a running
+  client; there are no routes, icons or the CS3 app's other endpoints. Without
   `PITC_ROCRAIL_PLAN` the served locomotive/accessory/route lists start
   empty (locomotives added by hand in TrainControl are stored by
   TrainControl, not by the Pi).

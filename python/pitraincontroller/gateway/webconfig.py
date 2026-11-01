@@ -41,6 +41,11 @@ PLAN_PATH = os.environ.get("PITC_ROCRAIL_PLAN", "")
 # Set to 1 to log every request (and its status) in the journal, to see what a
 # client asks for and which of those the server can't answer (404).
 LOG_REQUESTS = os.environ.get("PITC_WEB_LOG_REQUESTS", "0") == "1"
+# "cs2" (default) or "cs3". TrainControl decides which database format to use
+# by reading /config/geraet.vrs for the text "Central Station 3"; with "cs3" the
+# Pi says so, and clients then use the CS3 JSON lists under /app/api/ instead
+# of the .cs2 files for locomotives, accessories and routes.
+STATION = os.environ.get("PITC_WEB_STATION", "cs2").strip().lower()
 
 _DEFAULTS: dict[str, bytes] = {
     "/can/": b"PiTrainController CAN gateway\n",
@@ -49,10 +54,24 @@ _DEFAULTS: dict[str, bytes] = {
     "/config/magnetartikel.cs2": b"[magnetartikel]\nversion\n .minor=1\nsession\n .id=1\n",
     "/config/fahrstrassen.cs2": b"[fahrstrassen]\nversion\n .minor=1\nsession\n .id=1\n",
     "/config/geraet.vrs": b"[geraet]\nversion\n .minor=1\ngeraet\n .sernum=1\n .hardvers=PiTrainController,1\n",
+    # CS3 firmware 2.6+ style lists; empty unless generated from a Rocrail plan
+    "/app/api/locos": b"[]",
+    "/app/api/mags": b"[]",
+    "/app/api/automatics": b"[]",
 }
+_CS3_GERAET = (
+    b"[geraet]\nversion\n .minor=1\ngeraet\n .sernum=1\n"
+    b" .hardvers=Central Station 3 (emulated by PiTrainController)\n"
+)
 
 
-_GENERATED_PATHS = ("/config/lokomotive.cs2", "/config/magnetartikel.cs2", "/config/gleisbild.cs2")
+_GENERATED_PATHS = (
+    "/config/lokomotive.cs2",
+    "/config/magnetartikel.cs2",
+    "/config/gleisbild.cs2",
+    "/app/api/locos",
+    "/app/api/mags",
+)
 
 
 def _normalize(path: str) -> str:
@@ -60,9 +79,12 @@ def _normalize(path: str) -> str:
     return "/can/" if p == "/can" else p
 
 
-def default_body(path: str) -> bytes | None:
+def default_body(path: str, station: str = "cs2") -> bytes | None:
     """The built-in fallback for a request path, or None if there isn't one."""
-    return _DEFAULTS.get(_normalize(path))
+    p = _normalize(path)
+    if p == "/config/geraet.vrs" and station == "cs3":
+        return _CS3_GERAET
+    return _DEFAULTS.get(p)
 
 
 def generated_body(path: str, plan_path: str | None) -> bytes | None:
@@ -79,6 +101,10 @@ def generated_body(path: str, plan_path: str | None) -> bytes | None:
         with open(plan_path, encoding="utf-8") as f:
             text = f.read()
         session_id = int(os.path.getmtime(plan_path)) & 0x7FFFFFFF
+        if p == "/app/api/locos":
+            return rocrail_plan.build_locos_json(rocrail_plan.parse_plan(text)[0]).encode("utf-8")
+        if p == "/app/api/mags":
+            return rocrail_plan.build_mags_json(rocrail_plan.parse_plan(text)[1]).encode("utf-8")
         if p == "/config/lokomotive.cs2":
             return rocrail_plan.build_lokomotive_cs2(rocrail_plan.parse_plan(text)[0], session_id).encode("utf-8")
         if p == "/config/magnetartikel.cs2":
@@ -99,19 +125,21 @@ def generated_body(path: str, plan_path: str | None) -> bytes | None:
 class Cs2WebHandler(SimpleHTTPRequestHandler):
     server_version = "PiTrainController-CS2"
 
-    def __init__(self, *args: object, plan_path: str | None = None, **kwargs: object) -> None:
+    def __init__(self, *args: object, plan_path: str | None = None, station: str = "cs2", **kwargs: object) -> None:
         self._plan_path = plan_path
+        self._station = station
         super().__init__(*args, **kwargs)
 
     def _fallback(self) -> bytes | None:
-        return generated_body(self.path, self._plan_path) or default_body(self.path)
+        return generated_body(self.path, self._plan_path) or default_body(self.path, self._station)
 
     def _file_exists(self) -> bool:
         return os.path.isfile(self.translate_path(self.path))
 
     def _send_default(self, body: bytes, head_only: bool) -> None:
         self.send_response(200)
-        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        is_json = _normalize(self.path).startswith("/app/api/")
+        self.send_header("Content-Type", "application/json" if is_json else "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if not head_only:
@@ -146,15 +174,17 @@ class _QuietServer(ThreadingHTTPServer):
         super().handle_error(request, client_address)
 
 
-def make_server(port: int, root: str, host: str = "", plan_path: str | None = None) -> ThreadingHTTPServer:
-    handler = partial(Cs2WebHandler, directory=root, plan_path=plan_path)
+def make_server(
+    port: int, root: str, host: str = "", plan_path: str | None = None, station: str = "cs2"
+) -> ThreadingHTTPServer:
+    handler = partial(Cs2WebHandler, directory=root, plan_path=plan_path, station=station)
     return _QuietServer((host, port), handler)
 
 
 def main() -> None:
     os.makedirs(WEB_ROOT, exist_ok=True)
-    server = make_server(WEB_PORT, WEB_ROOT, plan_path=PLAN_PATH or None)
-    log.info("CS2 web config server on port %d, serving %s", WEB_PORT, WEB_ROOT)
+    server = make_server(WEB_PORT, WEB_ROOT, plan_path=PLAN_PATH or None, station=STATION)
+    log.info("CS2 web config server on port %d, serving %s, presenting as a %s", WEB_PORT, WEB_ROOT, STATION.upper())
     if PLAN_PATH:
         log.info("locomotives and switches are generated from the Rocrail plan %s", PLAN_PATH)
     try:

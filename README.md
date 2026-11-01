@@ -67,10 +67,12 @@ built and brought up on real hardware. Things to know:
   pin 27) is wired to 3.3V but needs 5V, so built boards need pin 27
   moved to the 5V rail — see
   [`docs/reference/hardware-manual-v4.md`](docs/reference/hardware-manual-v4.md).
-- **CS2 only, not a CS3 clone**: the Pi answers as a CS2 (UDP 15731/15730
-  plus a small HTTP config server on port 80). The CS3's JSON API
-  (`/app/api/...`) is not implemented, and the locomotive/accessory
-  lists in `/var/lib/pitraincontroller/cs2` start empty.
+- **A CS2, with an experimental CS3 mode**: the Pi answers as a CS2 (UDP
+  15731/15730 plus a small HTTP config server on port 80). The CS3's JSON
+  lists (locos, switches) are available behind `PITC_WEB_STATION=cs3` but
+  haven't been tried against a running client, and there are no routes or
+  icons. Locomotive/accessory lists start empty unless generated from a
+  Rocrail plan; see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md).
 - **Not yet verified**: the S88 daughterboard (still being designed),
   long-running stability, and CS2-compatible clients other than
   TrainControl and Rocrail.

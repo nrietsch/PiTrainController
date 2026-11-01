@@ -23,6 +23,7 @@ Mapping, with what is and isn't known:
 
 from __future__ import annotations
 
+import json
 import logging
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -95,6 +96,61 @@ def parse_plan(xml_text: str) -> tuple[list[Loco], list[Switch]]:
         switches.append(Switch(name, address, decoder, kind))
 
     return locos, switches
+
+
+def _loco_functions_json(loco: Loco) -> list[dict[str, object]]:
+    return [
+        {
+            "nr": nr,
+            "typ": 1 if nr == 0 else 0,
+            "fs": 0,
+            "typ2": 1 if nr == 0 else 0,
+            "dauer": 0,
+            "state": 0,
+            "isMoment": False,
+            "icon": f"fkticon_i_{1 if nr == 0 else 0:03d}",
+        }
+        for nr in range(loco.functions)
+    ]
+
+
+def build_locos_json(locos: list[Loco]) -> str:
+    """The CS3 `/app/api/locos` list (CS3 firmware 2.6+), with the keys
+    TrainControl reads: the uid carries the protocol base, as on a CS3."""
+    return json.dumps(
+        [
+            {
+                "name": loco.name,
+                "internname": loco.name,
+                "uid": f"0x{_UID_BASE[loco.kind] + loco.address:x}",
+                "address": loco.address,
+                "dectyp": loco.kind,
+                "icon": loco.name,
+                "recent": 0,
+                "funktionen": _loco_functions_json(loco),
+            }
+            for loco in locos
+        ]
+    )
+
+
+def build_mags_json(switches: list[Switch]) -> str:
+    """The CS3 `/app/api/mags` accessory list."""
+    return json.dumps(
+        [
+            {
+                "name": sw.name,
+                "internname": sw.name,
+                "id": sw.address,
+                "address": sw.address,
+                "typ": sw.kind,
+                "prot": "dcc" if sw.decoder == "dcc" else "mm",
+                "states": 2,
+                "state": 0,
+            }
+            for sw in switches
+        ]
+    )
 
 
 def build_lokomotive_cs2(locos: list[Loco], session_id: int = 1) -> str:
