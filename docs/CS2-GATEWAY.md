@@ -158,10 +158,12 @@ Without a plan all three are empty lists. The `.cs2` layout and accessory
 files are still served, since TrainControl reads layouts from them in CS3
 mode too. Not provided: the older firmware's `/app/api/loks`, loco and
 function icon images (`/app/assets/...`, so pictures stay blank), and
-anything the CS3's own app needs beyond these lists. This has been tested
-against TrainControl's published CS3 file formats but not yet against a
-running TrainControl; set `PITC_WEB_LOG_REQUESTS=1` to see what a client
-asks for and which requests the Pi can't answer. To go back to CS2
+anything the CS3's own app needs beyond these lists. Verified with TrainControl
+3.0.6: it reports "Station type detection result: CS3" and a deleted
+locomotive re-imports from the plan through the CS3 lists. Other CS3
+clients, including Märklin's own app, are untested; set
+`PITC_WEB_LOG_REQUESTS=1` to see what a client asks for and which
+requests the Pi can't answer. To go back to CS2
 mode, remove the setting and restart the service.
 
 ## Waking the Gleisbox ("magic start") and the ping test
