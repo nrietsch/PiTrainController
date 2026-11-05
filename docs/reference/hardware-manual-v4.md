@@ -7,6 +7,20 @@
 > map — both list identical pins). The S88 daughterboard/module (J8,
 > RJ1, RJ2) is explicitly called out as still being revised separately.
 
+> **This text describes v4.0. The current design is v4.3.** Differences,
+> read from the v4.3 KiCad PCB file (the Pi pin assignments are the same):
+> - Gleisbox connector is J4 (was J2).
+> - Main S88 header is J6 and the tap header is J5 (were J5 and J4). Pin
+>   order is unchanged.
+> - RJ1 is an s88-N jack on the same S88 bus: 1 VDD, 2 Data, 3 GND,
+>   4 Clock, 5 GND, 6 Load, 7 Reset, 8 not connected.
+> - The J7 termination jumper is gone: the 120Ω resistor (R8) is always
+>   across CAN-H/CAN-L.
+> - VDDA (IC1 pin 27) is on the 5V rail, fixing the v4.0 errata below.
+> - The bridge rectifier (BR1) is gone, and the buck regulator is an
+>   LM2596S-5.0 (IC3) and the ideal-diode controller is IC2, in place of
+>   the LM73606 (IC2) and IC3 described below.
+
 # Model Train Controller
 Raspberry Pi Controller Board — User Manual
 Board revision: PCB Design v4.0

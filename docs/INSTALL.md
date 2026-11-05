@@ -1,28 +1,26 @@
 # PiTrainController install guide
 
-> No boards have been fabricated yet (the S88 daughterboard is still
-> being finalized — see the project README). Every step below is
-> written and internally tested where possible (protocol/logic unit
-> tests — see each milestone doc), but the end-to-end install hasn't
-> been run on a real Pi yet. Expect to find and fix real-hardware
-> surprises together once boards exist; that's expected, not a sign
-> something here is wrong.
+> The software has run on a real v4.0 board with a commercial S88 module
+> (see the project README for what's verified). It hasn't been run on a
+> v4.3 board yet.
 
 ## Prerequisites
 
-- Raspberry Pi 3B+ with the PiTrainController HAT (PCB Design v4.0 or
-  compatible — see [`docs/reference/hardware-manual-v4.md`](reference/hardware-manual-v4.md)
+- Raspberry Pi 3B+ with the PiTrainController HAT (PCB Design v4.3, or a
+  v4.0 board with the VDDA fix — see [`docs/reference/hardware-manual-v4.md`](reference/hardware-manual-v4.md)
   for the full pinout/power design) attached.
 - Raspberry Pi OS **Trixie** (Debian 13), 64-bit, **Desktop** edition
   (needed for Rocrail's GUI if you install it — see below).
 - A monitor/SSH access to run commands below.
-- The board is powered from the Gleisbox connection alone (J2) and feeds
+- The board is powered from the Gleisbox connection alone (J4 on v4.3,
+  J2 on v4.0) and feeds
   the Pi's 5V rail through the GPIO header via an ideal-diode circuit —
   **do not** also plug a USB/micro-USB power adapter into the Pi while
   it's seated on this board (hardware manual, Section 3.2).
-- If this board sits at a physical end of the CAN bus, jumper J7 pins
-  1–2 to enable the on-board 120Ω termination; leave it open/parked on
-  2–3 if another node already terminates the bus.
+- CAN termination: v4.3 always has its 120Ω resistor across the bus. On
+  v4.0, if the board sits at a physical end of the CAN bus, jumper J7
+  pins 1–2 to enable the 120Ω termination; leave it open/parked on 2–3
+  if another node already terminates the bus.
 
 ## 1. Flash and boot Raspberry Pi OS Trixie
 
@@ -168,10 +166,10 @@ for configuration and verification specific to each.
   `dtoverlay=pitraincontroller-mcp25625` (not commented out, correctly
   spelled).
 - **`can0` exists but `candump` shows nothing** even with the bus
-  active: check wiring/termination (see J7 above), and confirm the
+  active: check wiring/termination (see above), and confirm the
   bitrate is exactly `250000`.
 - **`ip link show can0` reports `bus-off` or climbing error counters**:
-  usually bus wiring/termination (double-check J7) or a bitrate
+  usually bus wiring/termination (on v4.0, double-check J7) or a bitrate
   mismatch. `ip -details -statistics link show can0` shows TX/RX error
   counters that help narrow this down.
 - **Reset line concerns**: the overlay drives GPIO27 high (inactive) via

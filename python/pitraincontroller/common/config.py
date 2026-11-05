@@ -4,7 +4,7 @@ S88, LED, and CAN gateway services.
 
 Pin numbers are BCM GPIO numbering, cross-checked against both the
 project brief and the PCB Design v4.0 board manual (docs/reference/) --
-the two agree on every pin listed here.
+the two agree on every pin listed here, and the v4.3 PCB uses the same pins.
 
 Everything is overridable via environment variables so the same code
 works unmodified across board revisions/test rigs; systemd unit
