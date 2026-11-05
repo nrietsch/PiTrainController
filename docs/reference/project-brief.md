@@ -1,4 +1,4 @@
-Project Brief: Model Train Controller — Host Software
+Project Brief: PiTrainController — Host Software
 Paste this into Claude Code as the opening prompt for this project.
 What this is
 I have a custom Raspberry Pi HAT (a PCB that plugs directly onto the Pi's 40-pin GPIO header) that bridges a Raspberry Pi to a Märklin model railway system. The hardware is finished and verified; I need host-side software on the Pi to talk to it. This brief describes the board so you have full context before we write any code.

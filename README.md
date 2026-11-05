@@ -3,7 +3,8 @@
 A ground-up rewrite of a Raspberry Pi HAT's host software: bridges a
 Raspberry Pi 3B+ to a Märklin model railway (CAN bus for track/loco/
 accessory control, S88 bus for sensor feedback), and exposes it as a
-CS2/CS3-compatible network device so tools like Rocrail,
+CS2/CS3-compatible network device so tools like
+[Rocrail](https://www.rocrail-wiki.net/doku.php?id=start),
 [TrainControl](https://github.com/bob123456678/TrainControl), the Märklin
 CS2 App, or mobile control apps can drive the layout through it — while
 Rocrail can also run locally on the same Pi at the same time.
@@ -15,19 +16,21 @@ library. The hardware is a new board (currently PCB Design v4.3); this is
 new software from scratch, informed by the old code's behavior but not
 derived from it.
 
+[![Support PiTrainController on Buy Me a Coffee](docs/assets/buy-me-a-coffee.svg)](https://buymeacoffee.com/traincontroller)
+
 ## Hardware
 
 - Raspberry Pi 3B+ + a custom HAT (PCB Design v4.3) with an on-board
   **MCP25625** CAN controller/transceiver (SPI0), four GPIO pins for a
   bit-banged S88 feedback bus, and its own power path off the Gleisbox
-  connection (buck regulator + ideal-diode feed to the Pi — no separate
-  Pi power supply needed or supported).
+  connection (no separate Pi power supply needed or supported).
+- Boards aren't on sale yet: v4.3 is still being tested.
 - **S88 feedback works with commercial modules**: plug one into the
   6-pin S88 header with a standard ribbon cable, or into the RJ45 jack
   with an s88-N cable. No daughterboard is needed.
-- Pinout, connector reference, and power design:
+- Pinout and connector reference:
   [`docs/reference/hardware-manual-v4.md`](docs/reference/hardware-manual-v4.md)
-  (written for v4.0; a note at the top lists what changed in v4.3) and
+  and
   [`docs/reference/project-brief.md`](docs/reference/project-brief.md)
   (original planning brief — GPIO pin map agrees with the manual).
 - A home-built S88 daughterboard (classic 74HC165 shift registers, routed
@@ -82,8 +85,7 @@ been built and brought up on real hardware. Things to know:
   through them. There are no routes or icons, and other CS3 clients
   (including Märklin's own app) are untested. Locomotive/accessory lists start empty unless generated from a
   Rocrail plan; see [`docs/CS2-GATEWAY.md`](docs/CS2-GATEWAY.md).
-- **Not yet verified**: the v4.3 board, the RJ45/s88-N connection, the
-  S88 daughterboard (still being designed), long-running stability, and
+- **Not yet verified**: the v4.3 board, the S88 daughterboard (still being designed), long-running stability, and
   CS2-compatible clients other than TrainControl and Rocrail.
 
 ## Getting started
@@ -115,9 +117,9 @@ python/       the Python services (S88 driver, LED service, CS2/CS3 gateway)
 docs/         install guide + reference material (brief, hardware manual, legacy code)
 ```
 
-## Support Train Controller
+## Support PiTrainController
 
-The software part of Train Controller as well as the board schematics is
-free, with no ads or locked features. I develop it in my spare time, so if
-you enjoy using it, please consider
-[buying me a coffee](https://buymeacoffee.com/traincontroller).
+The PiTrainController software is free, with no ads or locked features. I develop it in my spare time, so if
+you enjoy using it, please consider buying me a coffee.
+
+[![Support PiTrainController on Buy Me a Coffee](docs/assets/buy-me-a-coffee.svg)](https://buymeacoffee.com/traincontroller)

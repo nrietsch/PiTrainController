@@ -8,7 +8,7 @@
 
 - Raspberry Pi 3B+ with the PiTrainController HAT (PCB Design v4.3, or a
   v4.0 board with the VDDA fix — see [`docs/reference/hardware-manual-v4.md`](reference/hardware-manual-v4.md)
-  for the full pinout/power design) attached.
+  for the pinout) attached.
 - Raspberry Pi OS **Trixie** (Debian 13), 64-bit, **Desktop** edition
   (needed for Rocrail's GUI if you install it — see below).
 - A monitor/SSH access to run commands below.

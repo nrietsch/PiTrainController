@@ -280,8 +280,8 @@ interactively when you need it.
   Rocrail running side by side. With the Rocrail plan configured, the
   locomotives sync into TrainControl (a deleted loco came back with its
   DCC address and type) and the track diagram loads in the Layouts menu
-  with the sensors reacting. Not verified: switches (no decoder fitted
-  yet), the Märklin CS2 App, other CS2-compatible clients, long-running
+  with the sensors reacting. Turnouts have also been switched. Not
+  verified: the Märklin CS2 App, other CS2-compatible clients, long-running
   stability.
 - **CS2 by default.** CS3 mode (`PITC_WEB_STATION=cs3`) serves the locomotive
   and switch lists. It's experimental: verified with TrainControl 3.0.6
