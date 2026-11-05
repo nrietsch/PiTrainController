@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="28" viewBox="0 0 400 28" role="img" aria-label="Buy Me a Coffee: Support PiTrainController">
+  <title>Buy Me a Coffee: Support PiTrainController</title>
+  <rect width="160" height="28" fill="#555555"/>
+  <rect x="160" width="240" height="28" fill="#ffdd00"/>
+  <path d="M12 6h11v2h-11z M12.6 9h9.8l-1 13h-7.8z" fill="#ffffff"/>
+  <rect x="11" y="4.5" width="13" height="1.2" fill="#ffffff"/>
+  <g font-family="Verdana, Geneva, DejaVu Sans, sans-serif" font-size="11" text-rendering="geometricPrecision">
+    <text x="32" y="18" fill="#ffffff" textLength="118" lengthAdjust="spacing">BUY ME A COFFEE</text>
+    <text x="172" y="18" fill="#222222" font-weight="700" textLength="216" lengthAdjust="spacing">SUPPORT PITRAINCONTROLLER</text>
+  </g>
+</svg>
